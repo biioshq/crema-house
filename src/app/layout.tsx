@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Fraunces, Inter } from 'next/font/google';
+import { Cormorant_Garamond, Inter } from 'next/font/google';
 import './globals.css';
 
 import { SmoothScroll } from '@/components/layout/SmoothScroll';
@@ -9,15 +9,22 @@ import { Footer } from '@/components/sections/Footer';
 import { SITE } from '@/lib/site';
 
 /**
- * Display: Fraunces, held at a high optical size with the soft and wonk axes
- * dialled to zero — refined rather than playful.
+ * Display: Cormorant Garamond — a high-contrast old-style with long, fine
+ * hairlines. Held at 300 for the very large sizes, where a heavier weight
+ * would read as a magazine cover rather than a five-star lobby.
  * Text: Inter, for the micro-labels and body copy.
  */
-const fraunces = Fraunces({
+const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-fraunces',
-  axes: ['SOFT', 'WONK', 'opsz'],
+  variable: '--font-cormorant',
+  // Cormorant is not a variable font: every weight and every style is a
+  // separate file. The display face is set at 300 everywhere on the site and
+  // the two <em>s that exist are both `not-italic`, so the other six faces
+  // were downloaded for nothing — and every one of them delayed
+  // `document.fonts.ready`, which is what every split-text reveal waits on.
+  weight: ['300', '400'],
+  style: ['normal'],
 });
 
 const inter = Inter({
@@ -61,19 +68,23 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0a0705',
-  colorScheme: 'dark',
+  themeColor: '#f8f5ef',
+  colorScheme: 'light',
   width: 'device-width',
   initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${inter.variable}`}>
+    <html lang="en" className={`${cormorant.variable} ${inter.variable}`}>
       <body>
+        {/* The warm pools that light the page. A fixed element rather than a
+            fixed background — see .page-glow in globals.css. */}
+        <div aria-hidden className="page-glow" />
+
         <a
           href="#main"
-          className="sr-only rounded-full bg-porcelain px-5 py-3 font-sans text-micro tracking-luxe text-espresso uppercase focus:not-sr-only focus:fixed focus:top-5 focus:left-5 focus:z-[120]"
+          className="sr-only rounded-full bg-ink px-5 py-3 font-sans text-micro tracking-luxe text-canvas uppercase focus:not-sr-only focus:fixed focus:top-5 focus:left-5 focus:z-[120]"
         >
           Skip to content
         </a>

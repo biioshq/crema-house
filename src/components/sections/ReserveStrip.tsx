@@ -16,9 +16,9 @@ type ReserveStripProps = {
 /**
  * The closing band on every sub-page.
  *
- * Deliberately quieter than the reservation page itself — a rule, a line of
- * type and one action. It exists so no page ends on a dead stop, not to
- * compete with /reserve.
+ * Deliberately quieter than the reservation page itself — a gold rule, a line
+ * of type and one action. It exists so that no page ends on a dead stop, not
+ * to compete with /reserve.
  */
 export function ReserveStrip({ heading, body }: ReserveStripProps) {
   const rootRef = useRef<HTMLElement>(null);
@@ -30,8 +30,13 @@ export function ReserveStrip({ heading, body }: ReserveStripProps) {
 
       gsap
         .timeline({ scrollTrigger: { trigger: rootRef.current, start: 'top 84%', once: true } })
-        .fromTo('.strip-rule', { scaleX: 0 }, { scaleX: 1, duration: 1.4, ease: 'power3.inOut' }, 0)
-        .fromTo('.strip-item', { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 1.1, stagger: 0.1 }, 0.3);
+        .fromTo('.strip-rule', { scaleX: 0 }, { scaleX: 1, duration: 1.5, ease: 'power3.inOut' }, 0)
+        .fromTo(
+          '.strip-item',
+          { opacity: 0, y: 20 },
+          { opacity: 1, y: 0, duration: 1.1, stagger: 0.1 },
+          0.3
+        );
     },
     [motionOK],
     rootRef
@@ -41,26 +46,24 @@ export function ReserveStrip({ heading, body }: ReserveStripProps) {
     <section ref={rootRef} className="relative isolate overflow-hidden pb-section">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[80%]"
+        className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[85%]"
         style={{
           background:
-            'radial-gradient(60% 90% at 50% 100%, rgb(120 80 34 / 0.14) 0%, transparent 72%)',
+            'radial-gradient(58% 90% at 50% 100%, rgb(241 231 213 / 0.85) 0%, transparent 74%)',
         }}
       />
 
       <div className="shell">
-        <div className="strip-rule h-px w-full origin-left bg-linear-to-r from-transparent via-clay to-transparent" />
+        <div className="strip-rule rule-gold origin-left" />
 
-        <div className="mt-14 flex flex-col items-center gap-8 text-center lg:flex-row lg:justify-between lg:gap-16 lg:text-left">
-          <div className="strip-item opacity-0">
+        <div className="mt-10 flex flex-col items-center gap-10 text-center lg:flex-row lg:justify-between lg:gap-12 lg:text-left">
+          <div className="strip-item reveal">
             <h2 className="max-w-[16em] text-h3">{heading}</h2>
-            {body && (
-              <p className="mt-4 max-w-[46ch] font-sans text-body text-ash">{body}</p>
-            )}
+            {body && <p className="mt-5 max-w-[46ch] font-sans text-body text-mute">{body}</p>}
           </div>
 
-          <div className="strip-item shrink-0 opacity-0">
-            <Magnetic strength={0.32} padding={40}>
+          <div className="strip-item shrink-0 reveal">
+            <Magnetic strength={0.3} padding={40}>
               <Button asChild size="xl" variant="gilt">
                 <Link href="/reserve">
                   Reserve a table

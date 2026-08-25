@@ -4,7 +4,7 @@ import { useRef } from 'react';
 import { RevealImage } from '@/components/media/RevealImage';
 import { SplitHeading } from '@/components/motion/SplitHeading';
 import { Counter } from '@/components/motion/Counter';
-import { BeanDust } from '@/components/motion/BeanDust';
+import { Motes } from '@/components/motion/Motes';
 import { gsap, useGsap } from '@/hooks/useGsap';
 import { useMotionOK } from '@/hooks/useMediaQuery';
 import { IMAGES } from '@/lib/media';
@@ -109,7 +109,7 @@ export function StoryFull() {
 
   return (
     <section ref={rootRef} className="relative isolate overflow-hidden pb-section">
-      <BeanDust count={10} opacity={0.3} seed={0x51ce} className="-z-10" />
+      <Motes count={8} opacity={0.45} seed={0x51ce} className="-z-10" />
 
       <div className="shell">
         {/* ----------------------------- Chapters ---------------------------- */}
@@ -135,12 +135,12 @@ export function StoryFull() {
                     parallax={6}
                     sizes="(min-width: 1024px) 46vw, 92vw"
                     objectPosition={chapter.image === 'cafe' ? '48% 58%' : '50% 50%'}
-                    className="aspect-[4/5] rounded-md shadow-lift"
+                    className="aspect-[4/5] rounded-lg shadow-lift"
                   />
                 </div>
 
                 <div className="w-full lg:w-[47%]">
-                  <p className="chapter-index eyebrow opacity-0">
+                  <p className="chapter-index eyebrow reveal">
                     Chapter {chapter.index}
                   </p>
 
@@ -153,12 +153,12 @@ export function StoryFull() {
                     {chapter.title}
                   </SplitHeading>
 
-                  <div className="chapter-rule mt-8 h-px w-full origin-left bg-linear-to-r from-clay via-clay/50 to-transparent" />
+                  <div className="chapter-rule mt-8 h-px w-full origin-left bg-linear-to-r from-hair via-hair/60 to-transparent" />
 
                   {chapter.body.map((paragraph) => (
                     <p
                       key={paragraph.slice(0, 24)}
-                      className="chapter-body mt-6 max-w-[48ch] font-sans text-body text-crema/75 opacity-0"
+                      className="chapter-body reveal mt-6 max-w-[48ch] font-sans text-body text-ink-soft/85"
                     >
                       {paragraph}
                     </p>
@@ -170,20 +170,20 @@ export function StoryFull() {
         </div>
 
         {/* ------------------------------ Numbers ---------------------------- */}
-        <div className="story-stats mt-section border-t border-clay/25 pt-14">
+        <div className="story-stats mt-section border-t border-hair/70 pt-9">
           <dl className="grid grid-cols-2 gap-x-6 gap-y-12 lg:grid-cols-4 lg:gap-x-10">
             {STATS.map((stat) => (
-              <div key={stat.label} className="story-stat opacity-0">
+              <div key={stat.label} className="story-stat reveal">
                 <dt className="sr-only">{stat.label}</dt>
                 <dd>
                   <Counter
                     value={stat.value}
-                    className="display-face text-[clamp(2.6rem,5vw,3.8rem)] text-porcelain"
+                    className="display-face text-[clamp(2.6rem,5vw,3.8rem)] text-ink"
                   />
-                  <span aria-hidden className="mt-3 block h-px w-7 bg-gold/70" />
+                  <span aria-hidden className="mt-3 block h-px w-7 bg-gold" />
                   <span
                     aria-hidden
-                    className="mt-3 block max-w-[16ch] text-balance font-sans text-[0.6rem] leading-[1.5] tracking-wide-sm text-ash uppercase"
+                    className="mt-3 block max-w-[16ch] text-balance font-sans text-[0.6rem] leading-[1.5] tracking-wide-sm text-mute uppercase"
                   >
                     {stat.label}
                   </span>
@@ -192,7 +192,7 @@ export function StoryFull() {
             ))}
           </dl>
 
-          <p className="mt-14 font-sans text-micro text-ember uppercase">
+          <p className="mt-9 font-sans text-micro text-faint uppercase">
             {CONTACT.addressLines.join(' · ')}
           </p>
         </div>

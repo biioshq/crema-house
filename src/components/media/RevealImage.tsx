@@ -132,7 +132,13 @@ export function RevealImage({
       style={{ clipPath: 'inset(0% 0% 0% 0%)' }}
     >
       {/* Scaled larger than the frame so the parallax drift never exposes an edge. */}
-      <div ref={innerRef} className="absolute inset-[-6%] will-change-transform">
+      {/* Promoted only where something actually keeps moving: the reveal plays
+          once and stops, so a permanent layer per photograph bought nothing
+          but GPU memory. */}
+      <div
+        ref={innerRef}
+        className={cn('absolute inset-[-6%]', parallax !== 0 && 'will-change-transform')}
+      >
         <Image
           src={asset.src}
           alt={alt}
@@ -159,9 +165,9 @@ export function RevealImage({
           style={{
             background:
               direction === 'left' || direction === 'right'
-                ? 'linear-gradient(180deg, transparent, rgb(231 178 105 / 0.95), transparent)'
-                : 'linear-gradient(90deg, transparent, rgb(231 178 105 / 0.95), transparent)',
-            boxShadow: '0 0 22px 2px rgb(231 178 105 / 0.45)',
+                ? 'linear-gradient(180deg, transparent, rgb(221 184 119 / 0.95), transparent)'
+                : 'linear-gradient(90deg, transparent, rgb(221 184 119 / 0.95), transparent)',
+            boxShadow: '0 0 22px 2px rgb(221 184 119 / 0.55)',
           }}
         />
       )}

@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useRef } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { SplitHeading } from '@/components/motion/SplitHeading';
-import { BeanDust } from '@/components/motion/BeanDust';
 import { Magnetic } from '@/components/motion/Magnetic';
 import { Button } from '@/components/ui/button';
 import { gsap, ScrollTrigger, useGsap } from '@/hooks/useGsap';
@@ -24,11 +23,12 @@ type VoicesProps = {
 /**
  * SECTION 05 — "Voices"
  *
- * Not a testimonial rail. Five glass panels float at different offsets and
- * each one's rotation is a pure function of how far it sits from the centre
- * of the viewport: they turn towards you as they arrive, lie flat as they
- * pass, and turn away again. Scroll position drives the whole thing, so the
- * motion is reversible, frame-accurate, and never "plays" twice.
+ * Not a testimonial rail. The cards are pages, hung off a single gold thread
+ * that runs the height of the section, and each one's rotation is a pure
+ * function of how far it sits from the centre of the viewport: they turn
+ * towards you as they arrive, lie flat as they pass, and turn away again.
+ * Scroll position drives all of it, so the motion is reversible,
+ * frame-accurate, and never "plays" twice.
  *
  * The rotation is computed from cached offsets rather than a per-frame
  * getBoundingClientRect on every card, so scrolling never forces layout.
@@ -80,15 +80,24 @@ export function Voices({
           const voice = items[i];
           if (!metric || !setter || !voice) continue;
 
+          // Four transform writes per card per scroll tick, for cards that are
+          // nowhere near the screen. The last transform simply stays where it
+          // was, which is invisible by definition.
+          const screenTop = metric.top - window.scrollY;
+          if (screenTop + metric.height < -200 || screenTop > viewport + 200) continue;
+
           // -1 well below the fold, 0 dead centre, +1 well above it.
           const distance = (metric.top + metric.height / 2 - centre) / viewport;
           const t = Math.max(-1.4, Math.min(1.4, distance));
           const side = voice.offset < 0 ? -1 : 1;
 
-          setter.rotateX(-t * 13);
-          setter.rotateY(side * Math.abs(t) * 9);
-          setter.rotateZ(side * t * 1.6);
-          setter.z(-Math.abs(t) * 90);
+          // A third of the amplitude of the dark version. On paper, a card
+          // that leans hard reads as broken rather than as deep — the tilt
+          // only has to be enough to catch the shadow.
+          setter.rotateX(-t * 4.5);
+          setter.rotateY(side * Math.abs(t) * 3);
+          setter.rotateZ(side * t * 0.6);
+          setter.z(-Math.abs(t) * 42);
         }
       };
 
@@ -106,26 +115,44 @@ export function Voices({
         },
       });
 
-      // Entrance — the panels lift in, then hand over to the scroll rotation.
+      // The thread draws itself down the section before the pages arrive.
+      gsap.fromTo(
+        '.voices-thread',
+        { scaleY: 0 },
+        {
+          scaleY: 1,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: '.voices-stack',
+            start: 'top 78%',
+            end: 'bottom 82%',
+            scrub: 1,
+          },
+        }
+      );
+
+      // Entrance — the pages lift in, then hand over to the scroll rotation.
       cards.forEach((card) => {
-        gsap.fromTo(
-          card.querySelector('.voice-card-surface'),
-          { opacity: 0, y: 46, scale: 0.96 },
-          {
-            opacity: 1,
-            y: 0,
-            scale: 1,
-            duration: 1.3,
-            ease: 'power4.out',
-            scrollTrigger: { trigger: card, start: 'top 88%', once: true },
-          }
-        );
+        gsap
+          .timeline({ scrollTrigger: { trigger: card, start: 'top 86%', once: true } })
+          .fromTo(
+            card.querySelector('.voice-card-surface'),
+            { opacity: 0, y: 42, scale: 0.97 },
+            { opacity: 1, y: 0, scale: 1, duration: 1.4, ease: 'power4.out' },
+            0
+          )
+          .fromTo(
+            card.querySelector('.voice-mark'),
+            { opacity: 0, scale: 0.8, rotate: -6 },
+            { opacity: 1, scale: 1, rotate: 0, duration: 1.6, ease: 'power4.out' },
+            0.2
+          );
       });
 
       if (cta) {
         gsap.fromTo(
           '.voices-cta',
-          { opacity: 0, y: 24 },
+          { opacity: 0, y: 22 },
           {
             opacity: 1,
             y: 0,
@@ -150,16 +177,24 @@ export function Voices({
       aria-label={showHeader ? undefined : 'Voices'}
       className="relative isolate overflow-hidden py-section"
     >
-      {/* Something worth seeing *through* the glass. */}
+      {/* A broad band of oat, so this reads as a different room from the
+          gallery above it. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-[10%] -z-10 h-[80%]"
+        className="pointer-events-none absolute inset-0 -z-10"
         style={{
           background:
-            'radial-gradient(52% 44% at 50% 42%, rgb(192 138 62 / 0.26) 0%, rgb(120 80 34 / 0.12) 45%, transparent 74%)',
+            'linear-gradient(180deg, rgb(243 238 229 / 0) 0%, rgb(243 238 229 / 0.9) 18%, rgb(243 238 229 / 0.9) 82%, rgb(243 238 229 / 0) 100%)',
         }}
       />
-      <BeanDust count={9} opacity={0.32} seed={0x901c} className="-z-10" />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-[12%] -z-10 h-[76%]"
+        style={{
+          background:
+            'radial-gradient(44% 40% at 50% 40%, rgb(252 249 243 / 0.55) 0%, rgb(241 231 213 / 0.32) 52%, transparent 76%)',
+        }}
+      />
 
       <div className="shell">
         {showHeader && (
@@ -177,56 +212,67 @@ export function Voices({
           </header>
         )}
 
-        {/* Perspective lives on the container so all five panels share one
+        {/* Perspective lives on the container so every page shares one
             vanishing point — otherwise each would rotate in its own world. */}
         <div
           className={[
-            'relative flex flex-col items-center gap-14 lg:gap-20',
-            showHeader ? 'mt-20 lg:mt-28' : '',
+            'voices-stack relative flex flex-col items-center gap-10 lg:gap-14',
+            showHeader ? 'mt-14 lg:mt-20' : '',
           ].join(' ')}
-          style={{ perspective: 1500 }}
+          style={{ perspective: 1600 }}
         >
+          {/* The thread the pages hang from. */}
+          <span
+            aria-hidden
+            className="voices-thread pointer-events-none absolute inset-y-0 left-1/2 hidden w-px origin-top -translate-x-1/2 lg:block"
+            style={{
+              background:
+                'linear-gradient(180deg, transparent, rgb(196 154 82 / 0.42) 12%, rgb(196 154 82 / 0.42) 88%, transparent)',
+            }}
+          />
+
           {items.map((voice, index) => (
             <figure
               key={voice.name}
-              className="voice-card w-full max-w-[34rem] will-change-transform lg:max-w-[38rem]"
+              className="voice-card relative w-full max-w-[36rem] will-change-transform lg:max-w-[42rem]"
               style={{
                 transformStyle: 'preserve-3d',
                 // Alternating offsets keep the column from reading as a list —
                 // but only where there is room for them. On a phone the card
                 // already spans the gutters, so any offset pushes it off-screen.
-                translate: isDesktop ? `${voice.offset * 0.55}% 0` : undefined,
+                translate: isDesktop ? `${voice.offset * 0.7}% 0` : undefined,
               }}
             >
-              <div className="voice-card-surface glass relative rounded-lg p-8 backdrop-blur-md sm:p-10">
-                {/* Quotation mark, set as a graphic rather than punctuation. */}
+              <div className="voice-card-surface card-surface relative rounded-lg px-8 pt-9 pb-9 sm:px-12 sm:pt-10 sm:pb-11">
+                {/* Quotation mark, set as a graphic rather than as punctuation —
+                    large enough that the quote reads as set *inside* it. */}
                 <span
                   aria-hidden
-                  className="display-face absolute -top-1 left-6 text-[5rem] leading-none text-gold/30 select-none sm:left-8"
+                  className="voice-mark display-face pointer-events-none absolute -top-2 left-5 text-[8rem] leading-none text-gold/25 select-none sm:left-8 sm:text-[10rem]"
                 >
                   &ldquo;
                 </span>
 
                 <blockquote className="relative">
-                  <p className="display-face text-[clamp(1.3rem,2.5vw,1.95rem)] leading-[1.45] text-porcelain">
+                  <p className="display-face text-[clamp(1.4rem,2.7vw,2.15rem)] leading-[1.4] text-ink">
                     {voice.quote}
                   </p>
                 </blockquote>
 
-                {/* The index sits in the caption row rather than pinned to the
+                <div aria-hidden className="mt-9 h-px w-full bg-hair-soft" />
+
+                {/* The index sits in the caption row rather than pinned to a
                     corner — on a one-line quote an absolute index collides
                     with the attribution. */}
-                <figcaption className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-2">
-                  <span aria-hidden className="h-px w-8 shrink-0 bg-gold/70" />
-                  <span className="font-sans text-micro text-crema uppercase">
-                    {voice.name}
-                  </span>
-                  <span className="font-sans text-[0.65rem] tracking-wide-sm text-ash normal-case">
+                <figcaption className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2">
+                  <span aria-hidden className="h-px w-8 shrink-0 bg-gold" />
+                  <span className="font-sans text-micro text-ink uppercase">{voice.name}</span>
+                  <span className="font-sans text-[0.68rem] tracking-wide-sm text-mute normal-case">
                     {voice.detail}
                   </span>
                   <span
                     aria-hidden
-                    className="ml-auto hidden font-sans text-micro text-ember tabular-nums sm:block"
+                    className="ml-auto hidden font-sans text-micro text-faint tabular-nums sm:block"
                   >
                     {String(index + 1).padStart(2, '0')} / {String(items.length).padStart(2, '0')}
                   </span>
@@ -237,8 +283,8 @@ export function Voices({
         </div>
 
         {cta && (
-          <div className="voices-cta mt-16 flex justify-center opacity-0 lg:mt-24">
-            <Magnetic strength={0.3} padding={38}>
+          <div className="voices-cta reveal mt-12 flex justify-center lg:mt-16">
+            <Magnetic strength={0.28} padding={38}>
               <Button asChild size="lg" variant="outline">
                 <Link href={cta.href}>
                   {cta.label}

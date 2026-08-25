@@ -82,10 +82,13 @@ export function Counter({
   }, [value, duration, pad, motionOK]);
 
   return (
-    <span className={cn('inline-flex items-baseline tabular-nums', className)}>
+    // `lining-nums` matters here: the display face defaults to old-style
+    // figures, where a 1 is an I-height glyph and a 9 drops below the
+    // baseline — beautiful in running text, unreadable as a statistic.
+    <span className={cn('inline-flex items-baseline lining-nums tabular-nums', className)}>
       {prefix}
       <span ref={maskRef} className="split-line">
-        <span ref={numberRef} className="inline-block will-change-transform">
+        <span ref={numberRef} className="inline-block">
           {format(value)}
         </span>
       </span>

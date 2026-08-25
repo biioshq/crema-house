@@ -12,9 +12,9 @@ import { useIsDesktop, useMotionOK } from '@/hooks/useMediaQuery';
 import { MENU, menuIndex, toColumns, type MenuItem } from '@/lib/menu';
 
 /** Each column drifts at its own rate — the section's signature. */
-const COLUMN_DRIFT = [-7, 5, -11];
+const COLUMN_DRIFT = [-6, 4, -9];
 /** And starts at its own height, so the grid never reads as rows. */
-const COLUMN_OFFSET = ['lg:mt-0', 'lg:mt-20', 'lg:mt-8'];
+const COLUMN_OFFSET = ['lg:mt-0', 'lg:mt-14', 'lg:mt-10'];
 
 type MenuProps = {
   /** Defaults to the full ten. */
@@ -30,18 +30,17 @@ type MenuProps = {
 };
 
 /**
- * "The Signature Ten"
+ * SECTION 03 — "The Menu"
  *
- * The strongest section, so it gets the most restraint: no card chrome at
- * all. Three columns fill in reading order and then scroll at three
- * different rates, which is what turns a grid into a composition. Cards
- * arrive with depth — rising, un-scaling and un-rotating out of the page
- * rather than fading — and reward a hover with a bloom, a lift, a slow zoom
- * and a price that rises out of a mask.
+ * A vitrine. Three columns of floating white plates fill in reading order and
+ * then scroll at three different rates, which is what turns a grid into a
+ * composition. The cards arrive with depth — rising, un-scaling and
+ * un-rotating out of the page rather than fading in — and there is more air
+ * between them than there is card.
  */
 export function Menu({
   items = MENU,
-  eyebrow = '03 — The Signature Ten',
+  eyebrow = '03 — The Menu',
   heading = 'Ten things, done properly.',
   aside = 'Everything on this list is made in the room, to order. The coffee is single origin and changes with the season — ask what is on the bar today.',
   cta,
@@ -60,17 +59,18 @@ export function Menu({
 
       // --- Entrance: depth, not opacity ---------------------------------
       gsap.utils.toArray<HTMLElement>('.menu-card').forEach((card) => {
-        gsap.set(card, { transformPerspective: 1200 });
+        gsap.set(card, { transformPerspective: 1000 });
 
         gsap.fromTo(
           card,
-          { y: 74, scale: 0.93, rotateX: 11, opacity: 0 },
+          { y: 78, scale: 0.94, rotateX: 16, z: -180, opacity: 0 },
           {
             y: 0,
             scale: 1,
             rotateX: 0,
+            z: 0,
             opacity: 1,
-            duration: 1.35,
+            duration: 1.5,
             ease: 'power4.out',
             scrollTrigger: { trigger: card, start: 'top 92%', once: true },
             onComplete: () => gsap.set(card, { clearProps: 'transform,opacity' }),
@@ -87,7 +87,7 @@ export function Menu({
           .fromTo(
             '.menu-rule',
             { scaleX: 0 },
-            { scaleX: 1, duration: 1.4, ease: 'power3.inOut' },
+            { scaleX: 1, duration: 1.5, ease: 'power3.inOut' },
             0.35
           );
       }
@@ -95,7 +95,7 @@ export function Menu({
       if (cta) {
         gsap.fromTo(
           '.menu-cta',
-          { opacity: 0, y: 24 },
+          { opacity: 0, y: 22 },
           {
             opacity: 1,
             y: 0,
@@ -139,22 +139,31 @@ export function Menu({
       aria-label={showHeader ? undefined : 'Menu'}
       className="relative isolate overflow-x-clip py-section"
     >
-      {/* A single warm pool of light behind the whole grid. */}
+      {/* The band the vitrine stands in — a wash of oat, edge to edge, that
+          separates the menu from the spread above it without a single line. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-[18%] -z-10 h-[60%]"
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-full"
         style={{
           background:
-            'radial-gradient(60% 50% at 50% 50%, rgb(120 80 34 / 0.11) 0%, transparent 70%)',
+            'linear-gradient(180deg, rgb(243 238 229 / 0) 0%, rgb(243 238 229 / 0.72) 14%, rgb(243 238 229 / 0.72) 86%, rgb(243 238 229 / 0) 100%)',
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-[16%] -z-10 h-[62%]"
+        style={{
+          background:
+            'radial-gradient(54% 46% at 50% 46%, rgb(252 249 243 / 0.5) 0%, transparent 72%)',
         }}
       />
 
       <div className="shell">
         {showHeader && (
           <header className="menu-head">
-            <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between lg:gap-16">
-              <div className="w-full lg:max-w-[32rem]">
-                <p className="menu-eyebrow eyebrow opacity-0">{eyebrow}</p>
+            <div className="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between lg:gap-12">
+              <div className="w-full lg:max-w-[34rem]">
+                <p className="menu-eyebrow eyebrow reveal">{eyebrow}</p>
                 <SplitHeading
                   as="h2"
                   id="menu-heading"
@@ -166,27 +175,27 @@ export function Menu({
                 </SplitHeading>
               </div>
 
-              <p className="menu-aside max-w-[38ch] font-sans text-body text-ash opacity-0 lg:pb-3 lg:text-right">
+              <p className="menu-aside reveal max-w-[38ch] font-sans text-body text-mute lg:pb-3 lg:text-right">
                 {aside}
               </p>
             </div>
 
-            <div className="menu-rule mt-12 h-px w-full origin-left bg-linear-to-r from-clay via-clay/50 to-transparent lg:mt-16" />
+            <div className="menu-rule rule-gold mt-9 origin-left lg:mt-12" />
           </header>
         )}
 
         {/* ------------------------------- Grid ------------------------------- */}
         <div
           className={[
-            'grid grid-cols-1 gap-x-7 gap-y-14 lg:grid-cols-3 lg:gap-x-10 lg:gap-y-20',
-            showHeader ? 'mt-14 lg:mt-20' : '',
+            'grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-3 lg:gap-x-12 lg:gap-y-14',
+            showHeader ? 'mt-10 lg:mt-14' : '',
           ].join(' ')}
         >
           {columns.map((column, columnIndex) => (
             <div
               key={columnIndex}
               className={[
-                'menu-column mx-auto flex w-full max-w-[32rem] flex-col gap-14 md:max-w-[42rem] lg:mx-0 lg:max-w-none lg:gap-20',
+                'menu-column mx-auto flex w-full max-w-[30rem] flex-col gap-10 md:max-w-[38rem] lg:mx-0 lg:max-w-none lg:gap-14',
                 COLUMN_OFFSET[columnIndex] ?? '',
               ].join(' ')}
             >
@@ -203,8 +212,8 @@ export function Menu({
         </div>
 
         {cta && (
-          <div className="menu-cta mt-16 flex justify-center opacity-0 lg:mt-24">
-            <Magnetic strength={0.3} padding={38}>
+          <div className="menu-cta reveal mt-12 flex justify-center lg:mt-16">
+            <Magnetic strength={0.28} padding={38}>
               <Button asChild size="lg" variant="outline">
                 <Link href={cta.href}>
                   {cta.label}

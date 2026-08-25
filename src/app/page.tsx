@@ -12,7 +12,8 @@ export default function HomePage() {
       <Hero />
       <Story />
 
-      {/* Six of the ten; the rest live on /menu. */}
+      {/* Six of the ten; the rest live on /menu. Sections run 01 → 05 in
+          scroll order — see the numbering note in Craft.tsx. */}
       <Menu
         items={MENU_HIGHLIGHTS}
         eyebrow="03 — The Menu"

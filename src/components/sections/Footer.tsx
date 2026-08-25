@@ -19,11 +19,14 @@ const ICONS = {
 /**
  * FOOTER
  *
- * Signature: the wordmark fills. Two stacked copies of the name sit exactly
- * on top of each other — a dark engraved one and a bright one clipped to
- * nothing — and scrolling wipes the clip open left to right, so the brand
- * literally lights up as you reach the bottom of the page. Above it, a
- * hairline draws itself across the full width.
+ * Almost nothing but paper. The newsletter takes the whole left half, the
+ * three utility columns are set small and quiet on the right, and below them
+ * the wordmark is engraved into the page at fifteen per cent of the viewport
+ * width — the largest thing on the site, and the palest.
+ *
+ * Signature: the wordmark fills. Two copies sit exactly on top of each other,
+ * a faint engraved one and a gilt one clipped to nothing, and scrolling wipes
+ * the clip open left to right, so the brand lights up as you reach the end.
  */
 export function Footer() {
   const rootRef = useRef<HTMLElement>(null);
@@ -43,25 +46,24 @@ export function Footer() {
     () => {
       if (!motionOK) return;
 
-      // The divider draws across as the footer arrives.
       gsap.fromTo(
         '.footer-rule',
         { scaleX: 0 },
         {
           scaleX: 1,
-          duration: 1.6,
+          duration: 1.7,
           ease: 'power3.inOut',
-          scrollTrigger: { trigger: '.footer-rule', start: 'top 92%', once: true },
+          scrollTrigger: { trigger: '.footer-rule', start: 'top 94%', once: true },
         }
       );
 
       gsap.fromTo(
         '.footer-col',
-        { opacity: 0, y: 26 },
+        { opacity: 0, y: 24 },
         {
           opacity: 1,
           y: 0,
-          duration: 1.1,
+          duration: 1.2,
           stagger: 0.1,
           ease: 'power3.out',
           scrollTrigger: { trigger: '.footer-grid', start: 'top 86%', once: true },
@@ -89,41 +91,42 @@ export function Footer() {
   );
 
   return (
-    <footer
-      ref={rootRef}
-      className="relative isolate overflow-hidden border-t border-clay/25 pt-section"
-    >
+    <footer ref={rootRef} className="relative isolate overflow-hidden pt-section">
+      {/* The page settles into a slightly deeper cream at the very bottom, so
+          the footer feels like the base of the stack rather than a cut-off. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[60%]"
+        className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[80%]"
         style={{
           background:
-            'radial-gradient(80% 100% at 50% 108%, rgb(120 80 34 / 0.20) 0%, transparent 70%)',
+            'linear-gradient(180deg, rgb(243 238 229 / 0) 0%, rgb(243 238 229 / 0.7) 46%, rgb(238 231 219 / 0.9) 100%)',
         }}
       />
 
       <div className="shell">
+        <div aria-hidden className="rule-gold mb-12 lg:mb-16" />
+
         {/* ------------------------------- Grid ------------------------------ */}
-        <div className="footer-grid grid grid-cols-1 gap-14 sm:grid-cols-2 lg:grid-cols-12 lg:gap-10">
+        <div className="footer-grid grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-12 lg:gap-12">
           {/* Newsletter */}
-          <div className="footer-col lg:col-span-5">
+          <div className="footer-col lg:col-span-4">
             <p className="eyebrow">The Sunday Note</p>
-            <h2 className="mt-6 max-w-[14em] text-h3">
+            <h2 className="mt-7 max-w-[13em] text-h3">
               One letter a week. What we roasted, and what we are reading.
             </h2>
 
             {subscribed ? (
-              <p className="mt-8 flex items-center gap-3 font-sans text-body text-gold-lit">
+              <p className="mt-9 flex items-center gap-3 font-sans text-body text-gold-deep">
                 <Check className="size-4 shrink-0" strokeWidth={1.5} />
                 Thank you — we&rsquo;ll write on Sunday.
               </p>
             ) : (
-              <form onSubmit={onSubmit} className="mt-8 max-w-sm">
+              <form onSubmit={onSubmit} className="mt-9 max-w-md">
                 <label htmlFor="newsletter-email" className="sr-only">
                   Email address
                 </label>
 
-                <div className="group relative flex items-center gap-3 border-b border-crema/20 pb-3 transition-colors duration-500 focus-within:border-gold">
+                <div className="group relative flex items-center gap-3 rounded-full border border-hair bg-card/70 py-1.5 pr-1.5 pl-6 shadow-soft transition-[border-color,box-shadow] duration-700 ease-luxe focus-within:border-gold/60 focus-within:shadow-float">
                   <input
                     id="newsletter-email"
                     type="email"
@@ -132,18 +135,18 @@ export function Footer() {
                     onChange={(event) => setEmail(event.target.value)}
                     placeholder="you@example.com"
                     autoComplete="email"
-                    className="w-full bg-transparent py-2.5 font-sans text-body text-porcelain outline-none placeholder:text-ember"
+                    className="w-full bg-transparent py-2.5 font-sans text-body text-ink outline-none placeholder:text-faint"
                   />
                   <button
                     type="submit"
                     aria-label="Subscribe to The Sunday Note"
-                    className="grid size-11 shrink-0 place-items-center rounded-full text-crema transition-[color,transform] duration-500 ease-luxe hover:translate-x-0.5 hover:text-gold-lit"
+                    className="grid size-11 shrink-0 place-items-center rounded-full bg-ink text-canvas transition-[background-color,transform] duration-700 ease-luxe hover:translate-x-0.5 hover:bg-gold-deep"
                   >
                     <ArrowRight className="size-4" strokeWidth={1.5} />
                   </button>
                 </div>
 
-                <p className="mt-3 font-sans text-micro text-ember uppercase">
+                <p className="mt-4 pl-6 font-sans text-micro text-faint uppercase">
                   No more than one email a week
                 </p>
               </form>
@@ -151,9 +154,9 @@ export function Footer() {
           </div>
 
           {/* Visit */}
-          <div className="footer-col lg:col-span-3">
+          <div className="footer-col lg:col-span-3 lg:col-start-6">
             <p className="eyebrow">Visit</p>
-            <address className="mt-6 space-y-1 font-sans text-body not-italic text-crema/75">
+            <address className="mt-7 space-y-1 font-sans text-body not-italic text-ink-soft/85">
               {CONTACT.addressLines.map((line) => (
                 <span key={line} className="block">
                   {line}
@@ -163,13 +166,13 @@ export function Footer() {
             <div className="mt-5 flex flex-col gap-4">
               <a
                 href={CONTACT.phoneHref}
-                className="w-fit py-3 -my-3 font-sans text-body text-crema/75 transition-colors duration-500 hover:text-porcelain"
+                className="w-fit py-3 -my-3 font-sans text-body text-ink-soft/85 transition-colors duration-500 hover:text-gold-deep"
               >
                 {CONTACT.phone}
               </a>
               <a
                 href={`mailto:${CONTACT.email}`}
-                className="w-fit py-3 -my-3 font-sans text-body text-crema/75 transition-colors duration-500 hover:text-porcelain"
+                className="w-fit py-3 -my-3 font-sans text-body text-ink-soft/85 transition-colors duration-500 hover:text-gold-deep"
               >
                 {CONTACT.email}
               </a>
@@ -179,13 +182,13 @@ export function Footer() {
           {/* Hours */}
           <div className="footer-col lg:col-span-2">
             <p className="eyebrow">Hours</p>
-            <dl className="mt-6 space-y-3">
+            <dl className="mt-7 space-y-4">
               {HOURS.map((entry) => (
                 <div key={entry.days}>
-                  <dt className="font-sans text-[0.6rem] tracking-wide-sm text-ash uppercase">
+                  <dt className="font-sans text-[0.6rem] tracking-wide-sm text-mute uppercase">
                     {entry.days}
                   </dt>
-                  <dd className="mt-1 font-sans text-body text-crema/75 tabular-nums">
+                  <dd className="mt-1 font-sans text-body text-ink-soft/85 tabular-nums">
                     {entry.time}
                   </dd>
                 </div>
@@ -197,12 +200,12 @@ export function Footer() {
           <div className="footer-col lg:col-span-2">
             <p className="eyebrow">Elsewhere</p>
 
-            <ul className="mt-6 space-y-4">
+            <ul className="mt-7 space-y-4">
               {FOOTER_LINKS.map((link) => (
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="group inline-flex items-center gap-2 py-3 -my-3 font-sans text-body text-crema/75 transition-colors duration-500 hover:text-porcelain"
+                    className="group inline-flex items-center gap-2 py-3 -my-3 font-sans text-body text-ink-soft/85 transition-colors duration-500 hover:text-gold-deep"
                   >
                     {link.label}
                     <ArrowRight
@@ -214,7 +217,7 @@ export function Footer() {
               ))}
             </ul>
 
-            <ul className="mt-7 flex gap-2.5">
+            <ul className="mt-8 flex gap-2.5">
               {SOCIALS.map((social) => {
                 const Icon = ICONS[social.icon];
                 return (
@@ -224,7 +227,7 @@ export function Footer() {
                       target="_blank"
                       rel="noreferrer noopener"
                       aria-label={social.label}
-                      className="grid size-11 place-items-center rounded-full border border-crema/15 text-crema/70 transition-[color,border-color,transform] duration-500 ease-luxe hover:-translate-y-0.5 hover:border-gold/60 hover:text-gold-lit"
+                      className="grid size-11 place-items-center rounded-full border border-hair bg-card/60 text-ink-soft/70 shadow-soft transition-[color,border-color,transform,box-shadow] duration-700 ease-luxe hover:-translate-y-0.5 hover:border-gold/60 hover:text-gold-deep hover:shadow-float"
                     >
                       <Icon className="size-4" />
                     </a>
@@ -236,33 +239,33 @@ export function Footer() {
         </div>
 
         {/* ------------------------------ Divider ---------------------------- */}
-        <div className="footer-rule mt-20 h-px w-full origin-left bg-linear-to-r from-transparent via-clay to-transparent lg:mt-28" />
+        <div className="footer-rule hairline mt-14 origin-left lg:mt-20" />
       </div>
 
       {/* ----------------------------- Wordmark ----------------------------- */}
-      <div className="footer-wordmark relative mt-14 px-[2vw] select-none lg:mt-20">
+      <div className="footer-wordmark relative mt-10 px-[2vw] select-none lg:mt-14">
         {/* The font-size lives on the wrapper so the em-based padding below
             scales with the wordmark. That padding matters: `leading-[0.82]`
             crops the line box above the cap height, and a background-clipped
             gradient only paints inside its own box — without the padding the
             grave accent on the E falls outside it and loses its fill. */}
-        <div className="relative pt-[0.18em] text-[15.5vw] leading-[0.82] tracking-[-0.04em]">
+        <div className="relative pt-[0.2em] text-[15.5vw] leading-[0.82] tracking-[-0.02em]">
           {/* Engraved base */}
           <span
             aria-hidden
-            className="display-face block text-center text-[1em] leading-[inherit] tracking-[inherit] text-porcelain/[0.07]"
+            className="display-face block text-center text-[1em] leading-[inherit] tracking-[inherit] text-ink/[0.07]"
           >
             {SITE.name}
           </span>
 
-          {/* Bright fill, wiped open by scroll */}
+          {/* Gilt fill, wiped open by scroll */}
           <span
             aria-hidden
-            className="footer-wordmark-fill display-face absolute inset-0 block pt-[0.18em] text-center text-[1em] leading-[inherit] tracking-[inherit]"
+            className="footer-wordmark-fill display-face absolute inset-0 block pt-[0.2em] text-center text-[1em] leading-[inherit] tracking-[inherit]"
             style={{
               clipPath: 'inset(0% 100% 0% 0%)',
               background:
-                'linear-gradient(96deg, var(--color-gold-dim) 0%, var(--color-gold-lit) 32%, #fff4de 52%, var(--color-gold-lit) 72%, var(--color-gold-dim) 100%)',
+                'linear-gradient(96deg, var(--color-gold-deep) 0%, var(--color-gold) 30%, var(--color-gold-lit) 50%, var(--color-gold) 70%, var(--color-gold-deep) 100%)',
               WebkitBackgroundClip: 'text',
               backgroundClip: 'text',
               color: 'transparent',
@@ -274,24 +277,24 @@ export function Footer() {
       </div>
 
       {/* ------------------------------ Colophon ---------------------------- */}
-      <div className="shell mt-12 flex flex-col-reverse items-center gap-6 border-t border-clay/20 py-8 sm:flex-row sm:justify-between lg:mt-16">
-        <p className="font-sans text-micro text-ember uppercase">
+      <div className="shell mt-9 flex flex-col-reverse items-center gap-6 border-t border-hair/70 py-9 sm:flex-row sm:justify-between lg:mt-12">
+        <p className="font-sans text-micro text-faint uppercase">
           © {new Date().getFullYear()} {SITE.name} · {SITE.established}
         </p>
 
         <div className="flex items-center gap-6">
-          <p className="hidden font-sans text-micro text-ember uppercase sm:block">
+          <p className="hidden font-sans text-micro text-faint uppercase sm:block">
             {SITE.tagline}
           </p>
 
-          <Magnetic strength={0.26} padding={28}>
+          <Magnetic strength={0.24} padding={28}>
             <button
               type="button"
               onClick={() => scrollTo(0)}
-              className="group flex items-center gap-2.5 font-sans text-micro text-crema/70 uppercase transition-colors duration-500 hover:text-porcelain"
+              className="group flex items-center gap-2.5 font-sans text-micro text-mute uppercase transition-colors duration-500 hover:text-ink"
             >
               <span className="whitespace-nowrap">Back to top</span>
-              <span className="grid size-11 place-items-center rounded-full border border-crema/15 transition-[border-color,transform] duration-500 ease-luxe group-hover:-translate-y-0.5 group-hover:border-gold/60">
+              <span className="grid size-11 place-items-center rounded-full border border-hair bg-card/60 shadow-soft transition-[border-color,transform] duration-700 ease-luxe group-hover:-translate-y-0.5 group-hover:border-gold/60">
                 <ArrowUp className="size-3.5" strokeWidth={1.5} />
               </span>
             </button>

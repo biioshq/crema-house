@@ -14,9 +14,9 @@ export default function VoicesPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Voices"
+        eyebrow="05 — Voices"
         title="What the room says back."
-        numeral="03"
+        numeral="05"
         mode="mask-wipe"
         lede="We have never asked anyone for a review. These were written on napkins, in emails, and once on the back of a receipt."
       />

@@ -1,34 +1,45 @@
 'use client';
 
 /**
- * Film grain + vignette.
+ * Paper.
  *
- * The photography is shot in low light; a fine analogue grain over the whole
- * page ties the flat UI surfaces to it and hides banding in the dark
- * gradients. Rendered once as a static SVG noise tile and jittered with a
- * stepped transform — no per-frame repaint of the noise itself.
+ * Two jobs, one element. First, a very fine woven tooth laid over the whole
+ * page in `multiply` at three per cent — enough that the cream reads as stock
+ * rather than as #F8F5EF, and enough to kill the banding in the wide warm
+ * gradients. Second, a top-light: a soft vertical lift that keeps the page
+ * from ever looking evenly lit.
+ *
+ * The tooth is laid on in normal blending rather than `multiply`. A blend
+ * mode on a fixed, full-viewport layer is not a free lens: it forces the
+ * browser to rasterise everything painted beneath it into the same buffer and
+ * re-blend the whole viewport on every scroll frame, which is exactly the
+ * frame budget this page could not spare. At three per cent the grey tile
+ * darkens and lifts the cream in roughly equal measure, so the paper reads the
+ * same — it simply composites now.
  */
 
 const NOISE =
-  "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'>" +
-  "<filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' " +
+  "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'>" +
+  "<filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' " +
   "stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter>" +
-  "<rect width='100%' height='100%' filter='url(%23n)' opacity='0.6'/></svg>";
+  "<rect width='100%' height='100%' filter='url(%23n)' opacity='0.55'/></svg>";
 
 export function Grain() {
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 z-[70]">
-      {/* Grain */}
+      {/* Tooth */}
       <div
-        className="absolute -inset-[6%] opacity-[0.055] mix-blend-overlay motion-safe:animate-[grain_1.1s_steps(1)_infinite]"
-        style={{ backgroundImage: `url("${NOISE}")`, backgroundSize: '260px 260px' }}
+        className="absolute -inset-[6%] opacity-[0.04]"
+        style={{ backgroundImage: `url("${NOISE}")`, backgroundSize: '220px 220px' }}
       />
-      {/* Vignette — pulls the eye to the centre of every composition. */}
+
+      {/* Top-light — the page is lit from above and slightly to the left, the
+          same direction as the light in every photograph on it. */}
       <div
         className="absolute inset-0"
         style={{
           background:
-            'radial-gradient(120% 90% at 50% 45%, transparent 42%, rgb(10 7 5 / 0.45) 100%)',
+            'linear-gradient(184deg, rgb(255 255 255 / 0.10) 0%, rgb(255 255 255 / 0) 22%, rgb(255 255 255 / 0) 76%, rgb(233 224 209 / 0.22) 100%)',
         }}
       />
     </div>

@@ -6,7 +6,6 @@
 export const SITE = {
   name: 'CRÈMA HOUSE',
   nameShort: 'CRÈMA',
-  monogram: 'CH',
   established: 'EST. MMXIV',
   tagline: 'Coffee, considered.',
   description:
@@ -15,6 +14,7 @@ export const SITE = {
 } as const;
 
 export const NAV_LINKS = [
+  { label: 'Home', href: '/' },
   { label: 'Story', href: '/story' },
   { label: 'Menu', href: '/menu' },
   { label: 'Voices', href: '/voices' },

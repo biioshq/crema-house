@@ -2,6 +2,7 @@
 
 import { useRef, type ReactNode } from 'react';
 import { gsap } from '@/lib/gsap';
+import { subscribePointer } from '@/lib/pointer';
 import { useIsoLayoutEffect } from '@/hooks/useIsoLayoutEffect';
 import { useHasFinePointer, useMotionOK } from '@/hooks/useMediaQuery';
 import { cn } from '@/lib/utils';
@@ -21,8 +22,13 @@ type MagneticProps = {
  * Magnetic attraction.
  *
  * The wrapper tracks the pointer while it is inside an expanded hit area and
- * springs home on exit. Translation is applied to a wrapper and its child at
+ * settles home on exit. Translation is applied to a wrapper and its child at
  * different rates, which reads as the label floating slightly above the pill.
+ *
+ * There is no listener of its own: it subscribes to the site-wide pointer
+ * store, which batches every consumer's rect read into a single layout flush
+ * per frame. The rect is read in the store's measure phase and reused for the
+ * write, so eight magnetic buttons cost exactly what one costs.
  */
 export function Magnetic({
   children,
@@ -45,52 +51,65 @@ export function Magnetic({
     const inner = innerRef.current;
     if (!shell || !inner) return;
 
-    const shellX = gsap.quickTo(shell, 'x', { duration: 0.7, ease: 'power3.out' });
-    const shellY = gsap.quickTo(shell, 'y', { duration: 0.7, ease: 'power3.out' });
-    const innerX = gsap.quickTo(inner, 'x', { duration: 0.9, ease: 'power3.out' });
-    const innerY = gsap.quickTo(inner, 'y', { duration: 0.9, ease: 'power3.out' });
+    // Short enough that the pill feels connected to the cursor rather than
+    // dragged behind it — the old 0.7s/0.9s pair read as latency.
+    const shellX = gsap.quickTo(shell, 'x', { duration: 0.4, ease: 'power3.out' });
+    const shellY = gsap.quickTo(shell, 'y', { duration: 0.4, ease: 'power3.out' });
+    const innerX = gsap.quickTo(inner, 'x', { duration: 0.55, ease: 'power3.out' });
+    const innerY = gsap.quickTo(inner, 'y', { duration: 0.55, ease: 'power3.out' });
 
+    let rect: DOMRect | null = null;
     let inside = false;
 
-    const onMove = (event: PointerEvent) => {
-      const rect = shell.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-
-      const near =
-        event.clientX > rect.left - padding &&
-        event.clientX < rect.right + padding &&
-        event.clientY > rect.top - padding &&
-        event.clientY < rect.bottom + padding;
-
-      if (near) {
-        inside = true;
-        const dx = event.clientX - cx;
-        const dy = event.clientY - cy;
-        shellX(dx * strength);
-        shellY(dy * strength);
-        innerX(dx * innerStrength);
-        innerY(dy * innerStrength);
-      } else if (inside) {
-        inside = false;
-        // Elastic release — the only overshoot in the whole site.
-        gsap.to([shell, inner], {
-          x: 0,
-          y: 0,
-          duration: 1.1,
-          ease: 'elastic.out(1, 0.4)',
-          overwrite: true,
-        });
-      }
+    const release = () => {
+      if (!inside) return;
+      inside = false;
+      gsap.to([shell, inner], {
+        x: 0,
+        y: 0,
+        duration: 0.55,
+        ease: 'power3.out',
+        overwrite: true,
+      });
+      // The layer is only worth promoting while something is moving.
+      gsap.set([shell, inner], { willChange: 'auto', delay: 0.55 });
     };
 
-    window.addEventListener('pointermove', onMove, { passive: true });
-    return () => window.removeEventListener('pointermove', onMove);
+    return subscribePointer({
+      measure: () => {
+        rect = shell.getBoundingClientRect();
+      },
+      apply: (x, y) => {
+        if (!rect) return;
+
+        const near =
+          x > rect.left - padding &&
+          x < rect.right + padding &&
+          y > rect.top - padding &&
+          y < rect.bottom + padding;
+
+        if (near) {
+          if (!inside) {
+            inside = true;
+            gsap.set([shell, inner], { willChange: 'transform' });
+          }
+          const dx = x - (rect.left + rect.width / 2);
+          const dy = y - (rect.top + rect.height / 2);
+          shellX(dx * strength);
+          shellY(dy * strength);
+          innerX(dx * innerStrength);
+          innerY(dy * innerStrength);
+        } else {
+          release();
+        }
+      },
+      reset: release,
+    });
   }, [enabled, strength, padding, innerStrength]);
 
   return (
-    <span ref={shellRef} className={cn('inline-block will-change-transform', className)}>
-      <span ref={innerRef} className="block h-full w-full will-change-transform">
+    <span ref={shellRef} className={cn('inline-block', className)}>
+      <span ref={innerRef} className="block h-full w-full">
         {children}
       </span>
     </span>

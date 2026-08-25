@@ -12,7 +12,9 @@ const nextConfig: NextConfig = {
   },
 
   experimental: {
-    optimizePackageImports: ['lucide-react', 'motion', '@react-three/drei'],
+    // three / @react-three are still in package.json but nothing in src/
+    // imports them any more, so listing drei here optimised nothing.
+    optimizePackageImports: ['lucide-react', 'motion'],
   },
 
   async headers() {

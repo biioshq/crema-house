@@ -14,9 +14,9 @@ export default function MenuPage() {
   return (
     <>
       <PageHeader
-        eyebrow="The Menu"
+        eyebrow="03 — The Menu"
         title="Ten things, done properly."
-        numeral="02"
+        numeral="03"
         mode="chars-scatter"
         lede="Everything here is made in the room, to order. The coffee is single origin and changes with the season — ask what is on the bar today."
       />

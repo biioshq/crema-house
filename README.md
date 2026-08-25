@@ -1,8 +1,17 @@
 # CRÈMA HOUSE
 
-A site for a slow-roast coffee house. Next.js 15 (App Router), TypeScript,
-Tailwind v4, GSAP + ScrollTrigger, Lenis, Framer Motion, and a small React
-Three Fiber scene in the hero.
+A site for a slow-roast coffee house, set as a bright editorial. Next.js 15
+(App Router), TypeScript, Tailwind v4, GSAP + ScrollTrigger, Lenis, and Framer
+Motion.
+
+## The look
+
+Warm paper rather than black: `#F8F5EF` page, `#F3EEE5` bands, white cards,
+warm charcoal `#222` ink, and one soft gold `#C49A52`. Cormorant Garamond at
+300 for the display sizes — a high-contrast old-style that echoes the sculpted
+letters standing in the hero footage — with Inter for everything set small.
+Nothing on the page is a flat colour: every surface carries a gradient, a
+paper tooth, or a soft warm shadow.
 
 ## Routes
 
@@ -51,11 +60,10 @@ src/
 ├─ components/
 │  ├─ sections/    Hero · Story · StoryFull · Menu · Craft · Voices
 │  │                Reserve · ReserveStrip · Footer
-│  ├─ layout/      SmoothScroll · Intro · Nav · PageHeader · Grain
-│  ├─ motion/      SplitHeading · Counter · Magnetic · BeanDust · EmberField
+│  ├─ layout/      SmoothScroll · Nav · PageHeader · Grain (paper + top-light)
+│  ├─ motion/      SplitHeading · Counter · Magnetic · Motes
 │  ├─ media/       BackgroundVideo · RevealImage
 │  ├─ menu/        MenuCard
-│  ├─ three/       BeanField (dynamic, desktop-only)
 │  └─ ui/          button · brand-icons
 ├─ hooks/          useGsap · useMediaQuery · usePointer · useIsoLayoutEffect
 └─ lib/            site · menu · voices · media(generated) · split · gsap · ease · utils
@@ -70,26 +78,58 @@ time early on.
 Two independent loops beat against each other and produce visible jitter.
 
 **Section signatures.** No two sections reveal the same way — travelling mask
-(Story), differential column drift (Menu), pinned per-letter handover (Craft),
-scroll-linked 3D rotation (Voices), pointer spotlight (Reserve), wordmark fill
-(Footer). `SplitHeading` centralises text splitting and exposes five distinct
-modes.
+(Story), differential column drift (Menu), plates opening from a centre slit
+(Craft), scroll-linked 3D rotation (Voices), pointer spotlight (Reserve),
+wordmark fill (Footer). `SplitHeading` centralises text splitting and exposes
+five distinct modes.
+
+**The hero is full screen and untinted.** The words are set in `hero1.mp4`
+itself, so nothing is laid over the top of it and there is no vignette or wash
+on the picture — only a warm rise at the very foot of the frame, deep enough to
+carry the copy and no deeper. There are two of those rises, because the crop is
+not the same shape on both: a phone is looking at the cup itself and needs a
+deeper floor than a desktop, where the copy lands on the table.
+
+**Depth is transforms, not drop shadows.** Every section that has objects in it
+puts them on planes inside a shared `perspective`, and moves those planes at
+different rates: the hero picture drifts *with* the pointer while its copy
+turns *against* it, the Craft panels hinge up out of the page and then lean
+toward the pointer with their numerals set a layer further back, the menu
+plates tilt and lift *towards* the viewer on `translate3d(…, 4rem)` rather than
+merely upward, and the Voices cards rotate as a pure function of their distance
+from the centre of the viewport.
+
+**Nothing ships that nothing uses.** The tree was swept after the redesign
+settled: three.js and `@radix-ui/react-dialog` came out of `package.json` (the
+WebGL bean field and the dialog-based menu are both gone), and with them the
+unused halves of `lib/ease.ts` and `lib/utils.ts`, five `@utility` blocks and
+eight theme tokens that no class ever referenced. `tsc --noUnusedLocals
+--noUnusedParameters` passes clean, and the tailwind-merge scales in
+`lib/utils.ts` are kept in step with `@theme` — a scale listed there that no
+longer exists is worse than one missing, because it silently changes which
+class wins.
+
+**`reveal`, not `opacity-0`.** Every scroll-revealed element wears the `reveal`
+utility. It is `opacity: 0`, except under `prefers-reduced-motion`, where it is
+`opacity: 1` — because the timeline that would have un-hidden it never runs,
+and an element only ever shown by an animation you have opted out of is simply
+an invisible element.
 
 **Never `indexOf` across the RSC boundary.** Props handed from a Server
 Component to a Client Component are serialised, so the objects arriving in the
 client are copies and are never identity-equal to the module's own array.
 `menuIndex(id)` looks positions up by id for exactly this reason.
 
-**Route changes reset the scroll.** `SmoothScroll` watches `usePathname`,
-jumps Lenis to the top without animating, then re-measures every ScrollTrigger
-on the next frame.
+**Route changes reset the scroll — unless there is a fragment.** `SmoothScroll`
+watches `usePathname`, jumps Lenis to the top without animating, then
+re-measures every ScrollTrigger on the next frame. A deep link such as
+`/#menu` wins over the reset, so the fragment is not immediately undone.
 
-**The Craft pin is derived, never hand-tuned.** `SECTION_HEIGHT` is computed
-from `SEGMENT_RATIO * PHRASES.length`, and the segment length is measured from
-the pinned panel's own `offsetHeight` — not from `window.innerHeight`, which
-tracks the *current* viewport and disagrees with `svh` the moment a phone's
-URL bar collapses. When those two drifted apart the pin released while the
-last statement was still on screen.
+**The gallery is hand-set, not generated.** Every plate in `Craft` carries an
+explicit column, an explicit row and its own aspect ratio, so no two land on
+the same baseline and the field never resolves into a grid. Below `lg` it
+collapses to one column in DOM order, which is why the three statements are
+interleaved with the photographs in `PLATES` rather than grouped.
 
 **Text splitting reverts.** `SplitHeading` splits, plays once, then restores
 the original DOM — no orphaned spans, no lingering `will-change`, and resizing
@@ -98,18 +138,23 @@ after the reveal cannot break the layout. The accessible name is preserved via
 
 ## Accessibility & performance
 
-- `prefers-reduced-motion` is honoured throughout: all timelines no-op, the
-  WebGL field never mounts, and background video does not autoplay.
+- `prefers-reduced-motion` is honoured throughout: all timelines no-op, Lenis
+  is never created, the cursor ring never mounts, background video does not
+  autoplay, and `reveal` resolves to visible so nothing is left hidden.
 - No horizontal scroll at 360px on any route, and every interactive target is
   at least 44x44 — both verified by script, not by eye.
-- There is no loading screen. The hero animates in on mount; the WebGL field
-  is deferred ~700ms so it never competes with LCP.
+- There is no loading screen. The hero animates in on mount.
 - Videos attach their `src` only near the viewport and pause off-screen.
-- Three.js is dynamically imported, desktop-only, and stays out of the initial
-  bundle (separate ~144 kB chunk).
+- The ambient field (`Motes`) is plain DOM with transform-only tweens: no
+  canvas, no render loop of its own, and the soft edges are gradients rather
+  than `filter: blur`, which would cost an offscreen pass per element per
+  frame.
+- Every pointer effect writes through `gsap.quickTo` and, where a section has
+  several of them, shares one listener — moving the mouse never triggers a
+  React render anywhere on the site.
 - Hover-only affordances (menu prices, tasting notes) are gated behind
   `@media (hover: hover)` so they are simply always visible on touch.
-- Production build: **191 kB First Load JS**.
+- Production build: **192 kB First Load JS**.
 
 ## Known caveats
 
@@ -125,6 +170,12 @@ after the reveal cannot break the layout. The accessible name is preserved via
   is not wired to any mailing service.
 - The home page has no reservation section by design — the path to booking is
   the hero action, the nav button, and the footer.
+- **The `media/` source folder has been deleted**, so `npm run media` can no
+  longer run: `public/media/` is now the only copy of the assets. Restore the
+  originals before touching the pipeline, and do not delete `src/lib/media.ts`
+  in the meantime — it can no longer be regenerated.
+- `public/media/og.jpg` is still the dark-era social card, and cannot be
+  rebuilt until the source photography is back.
 - `npm audit` reports high-severity transitive advisories in `postcss` and
   `sharp` via Next 15. The only offered fix is Next 16, which is a breaking
   major; the site is pinned to Next 15 deliberately.

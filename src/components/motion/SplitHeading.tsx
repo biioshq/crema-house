@@ -88,16 +88,20 @@ export function SplitHeading({
 
       switch (mode) {
         case 'chars-blur': {
-          gsap.set(lineInners, { yPercent: 110 });
-          gsap.set(chars, { filter: 'blur(14px)', opacity: 0.15 });
+          // The blur rides the line, not each glyph: a filter on an
+          // inline-block character forces its own offscreen surface every
+          // frame, and a headline is twenty of them.
+          gsap.set(lineInners, { yPercent: 110, filter: 'blur(12px)' });
+          gsap.set(chars, { opacity: 0.15 });
           tl.to(lineInners, {
             yPercent: 0,
+            filter: 'blur(0px)',
             duration: 1.4,
             stagger: stagger ?? 0.11,
             ease: 'expo.out',
           }).to(
             chars,
-            { filter: 'blur(0px)', opacity: 1, duration: 1.2, stagger: 0.012, ease: 'power2.out' },
+            { opacity: 1, duration: 1.2, stagger: 0.012, ease: 'power2.out' },
             0.15
           );
           break;
@@ -191,8 +195,22 @@ export function SplitHeading({
 
     // Line breaks are measured, so they are only correct after the webfont
     // has actually swapped in.
+    //
+    // `fonts.ready` waits for *every* font on the page, and until it settles
+    // the heading is sitting at opacity 0 — one slow face anywhere and the
+    // whole page reads as blank paper. next/font preloads these, so they land
+    // in a fraction of a second; the timeout is purely the guarantee that a
+    // slow or failed font can never leave a headline invisible.
+    let built = false;
+    const buildOnce = () => {
+      if (built) return;
+      built = true;
+      build();
+    };
+
     const fonts = document.fonts?.ready ?? Promise.resolve();
-    fonts.then(build).catch(build);
+    fonts.then(buildOnce).catch(buildOnce);
+    const fallback = window.setTimeout(buildOnce, 600);
 
     // Re-split on width changes, but only while the reveal is still pending —
     // once it has played the element is plain text and needs nothing.
@@ -210,6 +228,7 @@ export function SplitHeading({
 
     return () => {
       cancelled = true;
+      window.clearTimeout(fallback);
       cancelAnimationFrame(frame);
       observer.disconnect();
       trigger?.kill();

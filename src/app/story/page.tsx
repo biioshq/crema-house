@@ -13,9 +13,9 @@ export default function StoryPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Our Story"
+        eyebrow="02 — Our Story"
         title="A room built around one obsession."
-        numeral="01"
+        numeral="02"
         mode="words-flip"
         lede="We took a corner unit on Ashworth Lane, stripped it back to brick, and pointed every lamp at the bar. Everything since has been an argument about how long things should take."
       />

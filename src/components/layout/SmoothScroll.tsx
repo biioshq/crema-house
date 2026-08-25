@@ -46,17 +46,22 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
     if (!motionOK) return;
 
     const instance = new Lenis({
-      // A long, exponential settle — the single biggest contributor to the
-      // site feeling "expensive" rather than "fast".
-      duration: 1.15,
-      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      // Lerp rather than duration. A fixed 1.15s exponential settle meant every
+      // wheel tick took over a second to finish arriving, and a second tick
+      // during that window restarted the clock — which reads as latency, not
+      // as luxury. A framerate-independent lerp starts moving on the same
+      // frame as the input and still glides to a stop, so the page feels
+      // immediate *and* smooth. 0.11 covers ~90% of the distance in ~350ms.
+      lerp: 0.11,
       orientation: 'vertical',
       gestureOrientation: 'vertical',
       smoothWheel: true,
-      wheelMultiplier: 0.95,
+      // 0.95 quietly ate 5% of every scroll gesture, so the page always
+      // travelled slightly less far than the hand asked for.
+      wheelMultiplier: 1,
       // Native momentum on touch feels better than a simulated one.
       syncTouch: false,
-      touchMultiplier: 1.6,
+      touchMultiplier: 1.5,
     });
 
     lenisRef.current = instance;
@@ -80,9 +85,22 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
 
   // A new route means new content and new geometry. Jump to the top without
   // animating, then let every trigger re-measure once the page has painted.
+  //
+  // A deep link is the exception: `/#menu` should land on the menu, so the
+  // fragment wins over the reset. Without this the browser's own hash scroll
+  // happens first and is immediately undone.
   useEffect(() => {
-    lenisRef.current?.scrollTo(0, { immediate: true, force: true });
-    window.scrollTo(0, 0);
+    const hash = window.location.hash;
+    const target = hash.length > 1 ? document.querySelector<HTMLElement>(hash) : null;
+
+    if (target) {
+      const top = target.getBoundingClientRect().top + window.scrollY;
+      lenisRef.current?.scrollTo(top, { immediate: true, force: true });
+      window.scrollTo(0, top);
+    } else {
+      lenisRef.current?.scrollTo(0, { immediate: true, force: true });
+      window.scrollTo(0, 0);
+    }
 
     const frame = requestAnimationFrame(() => {
       lenisRef.current?.resize();
@@ -98,7 +116,7 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
     if (lenisRef.current) {
       lenisRef.current.scrollTo(target, {
         offset,
-        duration: 1.6,
+        duration: 1.05,
         easing: (t: number) => 1 - Math.pow(1 - t, 4),
       });
       return;

@@ -16,13 +16,17 @@ type MenuCardProps = {
 };
 
 /**
- * A menu card with no card.
+ * A dish as a product.
  *
- * The photography is already lit against near-black, so the frame is left
- * chromeless and the image dissolves straight into the page — the only
- * boundary is a gold hairline that fades in on hover. Everything else is
- * light: a bloom behind the frame, a lift, a slow zoom, and the price
- * rising out of a mask.
+ * A white plate floating on paper: the photograph is matted inside the card
+ * rather than bleeding to its edge, which is the single detail that separates
+ * a boutique from a bistro. Under it, the fine-dining leader — name, a gold
+ * hairline running the gap, price — so the price always lands on the same
+ * baseline no matter how long the name is.
+ *
+ * The hover choreography (lift, zoom, deeper shadow, glowing price) is one
+ * shared block in globals.css, so all four moves are guaranteed to run on the
+ * same curve for the same duration and the card reads as a single object.
  */
 export function MenuCard({ item, index, priority = false }: MenuCardProps) {
   const cardRef = useRef<HTMLElement>(null);
@@ -41,25 +45,45 @@ export function MenuCard({ item, index, priority = false }: MenuCardProps) {
     const inner = card.querySelector<HTMLElement>('.menu-card-inner');
     if (!inner) return;
 
-    const rotateX = gsap.quickTo(inner, 'rotationX', { duration: 0.9, ease: 'power3.out' });
-    const rotateY = gsap.quickTo(inner, 'rotationY', { duration: 0.9, ease: 'power3.out' });
+    const rotateX = gsap.quickTo(inner, 'rotationX', { duration: 1, ease: 'power3.out' });
+    const rotateY = gsap.quickTo(inner, 'rotationY', { duration: 1, ease: 'power3.out' });
+
+    // Measured once, when the pointer arrives, and reused for the whole
+    // hover. Re-reading it on every move forced a layout flush per event —
+    // and the card is lifting under a CSS transform at that moment anyway, so
+    // the fresh rect was the wrong one to tilt against.
+    let rect: DOMRect | null = null;
+
+    const onEnter = () => {
+      rect = card.getBoundingClientRect();
+      gsap.set(inner, { willChange: 'transform' });
+    };
 
     const onMove = (event: PointerEvent) => {
-      const rect = card.getBoundingClientRect();
+      if (!rect) rect = card.getBoundingClientRect();
       const nx = (event.clientX - (rect.left + rect.width / 2)) / (rect.width / 2);
       const ny = (event.clientY - (rect.top + rect.height / 2)) / (rect.height / 2);
-      rotateY(nx * 5.5);
-      rotateX(-ny * 4.5);
+      rotateY(nx * 6);
+      rotateX(-ny * 4.8);
     };
 
     const onLeave = () => {
-      gsap.to(inner, { rotationX: 0, rotationY: 0, duration: 1, ease: 'power3.out' });
+      rect = null;
+      gsap.to(inner, {
+        rotationX: 0,
+        rotationY: 0,
+        duration: 0.9,
+        ease: 'power3.out',
+        onComplete: () => gsap.set(inner, { willChange: 'auto' }),
+      });
     };
 
+    card.addEventListener('pointerenter', onEnter);
     card.addEventListener('pointermove', onMove);
     card.addEventListener('pointerleave', onLeave);
 
     return () => {
+      card.removeEventListener('pointerenter', onEnter);
       card.removeEventListener('pointermove', onMove);
       card.removeEventListener('pointerleave', onLeave);
     };
@@ -68,88 +92,80 @@ export function MenuCard({ item, index, priority = false }: MenuCardProps) {
   return (
     <article
       ref={cardRef}
-      className="menu-card group relative will-change-transform"
-      style={{ perspective: 1100 }}
+      className="menu-card group relative"
+      style={{ perspective: 1000 }}
     >
-      {/* Bloom — sits behind the frame and grows past its edges. */}
+      {/* Warmth pooling under the card — it grows past the edges on hover, so
+          the plate looks lit from underneath rather than outlined. */}
       <span
         aria-hidden
-        className="pointer-events-none absolute -inset-4 -z-10 opacity-0 blur-[2px] transition-opacity duration-700 ease-luxe group-hover:opacity-100 sm:-inset-8"
+        className="pointer-events-none absolute -inset-6 -z-10 opacity-0 transition-opacity duration-1000 ease-luxe group-hover:opacity-100 sm:-inset-10"
         style={{
           background:
-            'radial-gradient(58% 46% at 50% 55%, rgb(192 138 62 / 0.30) 0%, rgb(192 138 62 / 0.10) 45%, transparent 72%)',
+            'radial-gradient(56% 46% at 50% 58%, rgb(196 154 82 / 0.20) 0%, rgb(241 231 213 / 0.42) 44%, transparent 74%)',
         }}
       />
 
       <div
-        className="menu-card-inner relative will-change-transform"
+        className="menu-card-inner relative"
         style={{ transformStyle: 'preserve-3d' }}
       >
-        <div
-          className={[
-            'relative overflow-hidden rounded-lg',
-            item.aspect,
-            'shadow-[0_16px_40px_-20px_rgb(0_0_0/0.8)]',
-            'transition-[transform,box-shadow] duration-700 ease-luxe',
-            'group-hover:-translate-y-2.5 group-hover:shadow-lift',
-          ].join(' ')}
-        >
-          <Image
-            src={asset.src}
-            alt={item.name}
-            fill
-            sizes="(min-width: 1024px) 30vw, (min-width: 640px) 60vw, 88vw"
-            priority={priority}
-            placeholder="blur"
-            blurDataURL={asset.blurDataURL}
-            className="object-cover transition-transform duration-[1100ms] ease-luxe group-hover:scale-[1.075]"
-          />
+        <div className="menu-card-shell card-surface relative overflow-hidden rounded-lg p-3 sm:p-3.5">
+          {/* ------------------------------ Plate ------------------------------ */}
+          <div
+            className={[
+              'menu-card-media relative overflow-hidden rounded-[calc(var(--radius-lg)-0.75rem)] bg-sand',
+              item.aspect,
+            ].join(' ')}
+          >
+            <Image
+              src={asset.src}
+              alt={item.name}
+              fill
+              sizes="(min-width: 1024px) 30vw, (min-width: 640px) 60vw, 88vw"
+              priority={priority}
+              placeholder="blur"
+              blurDataURL={asset.blurDataURL}
+              className="object-cover"
+            />
 
-          {/* Scrim — deep at the foot so the type always holds. */}
-          <span
-            aria-hidden
-            className="absolute inset-0 transition-opacity duration-700"
-            style={{
-              background:
-                'linear-gradient(180deg, rgb(10 7 5 / 0.36) 0%, transparent 26%, transparent 44%, rgb(10 7 5 / 0.78) 82%, rgb(10 7 5 / 0.94) 100%)',
-            }}
-          />
+            {/* A whisper of light across the top of the image, so the crop
+                never looks pasted onto the card. */}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-0"
+              style={{
+                background:
+                  'linear-gradient(178deg, rgb(255 255 255 / 0.22) 0%, transparent 22%)',
+              }}
+            />
 
-          {/* Hairline that only exists on hover. */}
-          <span
-            aria-hidden
-            className="pointer-events-none absolute inset-0 rounded-lg opacity-0 transition-opacity duration-700 ease-luxe group-hover:opacity-100"
-            style={{ boxShadow: 'inset 0 0 0 1px rgb(231 178 105 / 0.42)' }}
-          />
+            {/* Category — the only chrome on the whole card. */}
+            <span className="absolute top-4 left-4 rounded-full bg-card/92 px-3 py-1.5 font-sans text-[0.58rem] tracking-[0.24em] text-gold-deep uppercase">
+              {item.category}
+            </span>
+          </div>
 
-          {/* Index */}
-          <span className="absolute top-5 left-5 font-sans text-micro text-crema/55 tabular-nums">
-            {String(index + 1).padStart(2, '0')}
-          </span>
+          {/* ------------------------------- Foot ------------------------------ */}
+          <div className="px-2 pt-7 pb-4 sm:px-3 sm:pt-8 sm:pb-5">
+            <p className="font-sans text-[0.58rem] tracking-[0.3em] text-faint tabular-nums uppercase">
+              {String(index + 1).padStart(2, '0')}
+            </p>
 
-          {/* Category */}
-          <span className="absolute top-5 right-5 font-sans text-micro text-gold/85 uppercase">
-            {item.category}
-          </span>
-
-          {/* Foot */}
-          <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
-            <div className="flex items-end justify-between gap-4">
-              <h3 className="text-h3 leading-none text-porcelain transition-transform duration-700 ease-luxe group-hover:-translate-y-0.5">
-                {item.name}
-              </h3>
-
-              {/* Price rises out of a mask on hover. The hidden state is
-                  applied only where hover exists — on touch, where there is
-                  no hover, the price is simply always shown. */}
-              <span className="split-line shrink-0 pb-0.5">
-                <span className="menu-reveal block font-sans text-label font-medium text-gold-lit tabular-nums">
-                  {formatPrice(item.price)}
-                </span>
+            {/* The leader. `items-baseline` plus a flexible rule is what keeps
+                every price in the column on exactly the same line. */}
+            <div className="mt-3 flex items-baseline gap-3">
+              <h3 className="text-h3 leading-none text-ink">{item.name}</h3>
+              <span
+                aria-hidden
+                className="h-px min-w-6 flex-1 translate-y-[-0.15em] bg-linear-to-r from-hair via-hair to-gold/45"
+              />
+              <span className="menu-price shrink-0 font-sans text-label font-medium text-ink tabular-nums">
+                {formatPrice(item.price)}
               </span>
             </div>
 
-            <p className="menu-note mt-2.5 max-w-[34ch] font-sans text-[0.78rem] leading-relaxed text-crema/70">
+            <p className="mt-4 max-w-[34ch] font-sans text-[0.8rem] leading-[1.75] text-mute">
               {item.note}
             </p>
           </div>
