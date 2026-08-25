@@ -7,6 +7,7 @@ import { Motes } from '@/components/motion/Motes';
 import { gsap, useGsap } from '@/hooks/useGsap';
 import { useMotionOK } from '@/hooks/useMediaQuery';
 import { VIDEOS } from '@/lib/media';
+import { SITE } from '@/lib/site';
 
 const STEPS = [
   {
@@ -89,6 +90,12 @@ export function Craft() {
           { scale: 1.16 },
           { scale: 1, duration: 1.9, ease: 'power3.out' },
           0
+        )
+        .fromTo(
+          '.craft-mark',
+          { opacity: 0, scale: 0.94 },
+          { opacity: 1, scale: 1, duration: 1.4, ease: 'power3.out' },
+          0.7
         )
         .fromTo('.craft-caption', { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.9 }, 0.9);
 
@@ -241,6 +248,33 @@ export function Craft() {
                         'linear-gradient(180deg, rgb(255 255 255 / 0.16) 0%, transparent 18%, transparent 48%, rgb(34 22 10 / 0.34) 78%, rgb(34 22 10 / 0.62) 100%)',
                     }}
                   />
+                  {/* The mark in the middle of the frame.
+
+                      Gold on roasted beans is a near-miss: both are warm and
+                      the footage keeps throwing highlights through exactly
+                      this range. So it gets a breath of shade of its own —
+                      a soft pool, centred, that fades out long before the
+                      edges — and the lighter gold rather than the base one. */}
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0"
+                    style={{
+                      background:
+                        'radial-gradient(46% 40% at 50% 42%, rgb(28 18 8 / 0.52) 0%, rgb(28 18 8 / 0.22) 52%, rgb(28 18 8 / 0) 78%)',
+                    }}
+                  />
+
+                  <div className="craft-mark pointer-events-none absolute inset-x-0 top-[41%] flex -translate-y-1/2 flex-col items-center px-6 text-center lg:top-[45%]">
+                    <span aria-hidden className="block h-px w-7 bg-gold-lit/75" />
+                    <p
+                      className="display-face mt-3.5 text-[clamp(0.95rem,2.5vw,1.3rem)] tracking-[0.16em] text-gold-lit italic"
+                      style={{ textShadow: '0 1px 3px rgb(28 18 8 / 0.55), 0 2px 16px rgb(28 18 8 / 0.8)' }}
+                    >
+                      {SITE.tagline}
+                    </p>
+                    <span aria-hidden className="mt-3.5 block h-px w-7 bg-gold-lit/75" />
+                  </div>
+
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 p-5 sm:p-6">
                     <span aria-hidden className="block h-px w-10 bg-gold-lit/85" />
                     <p className="mt-3 font-sans text-[0.58rem] leading-none font-medium tracking-[0.3em] text-canvas/75 uppercase">
