@@ -419,16 +419,16 @@
 /* ==========================================================================
    HERO
 
-   Two framings, chosen by the shape of the window rather than by a width
-   breakpoint, because what decides it is whether a full-bleed crop would eat
-   the lettering set into the footage.
+   Which of the two framings applies is decided in Hero.tsx, from the geometry
+   rather than from a breakpoint, and published here as `.hero-stacked` plus
+   `--hero-frame-bottom` — the exact line where the picture ends.
 
-   Landscape (5:4 and wider): the frame fills the screen edge to edge, its crop
-   aimed at the empty margins by `aimCrop` in Hero.tsx, and the copy sits above
-   the "of Coffee" that runs along the foot of it.
-
-   Portrait: no crop can keep the words, so the frame sits as a band at the head
-   of the section and the copy takes the paper beneath it.
+   Filled: the picture covers the section and the copy sits over the foot of it.
+   Stacked: the picture is a band at the head of the section and the copy takes
+   the paper beneath. Everything below the picture keys off the variable, never
+   off a fixed percentage — the band is about a quarter of a phone but nearly
+   half of a portrait tablet, and a stop that clears the first cuts through the
+   second.
    ========================================================================== */
 
 .hero-paper {
@@ -440,15 +440,19 @@
   bottom: clamp(5.5rem, 16vh, 9.5rem);
 }
 
-@media (max-aspect-ratio: 5/4) {
-  .hero-paper {
-    display: block;
-  }
+.hero-stacked .hero-paper {
+  display: block;
+  background: linear-gradient(
+    180deg,
+    rgb(248 245 239 / 0) var(--hero-frame-bottom, 33%),
+    rgb(248 245 239 / 0.9) calc(var(--hero-frame-bottom, 33%) + 7%),
+    rgb(248 245 239 / 1) calc(var(--hero-frame-bottom, 33%) + 14%)
+  );
+}
 
-  .hero-front {
-    top: 44%;
-    bottom: auto;
-  }
+.hero-stacked .hero-front {
+  top: calc(var(--hero-frame-bottom, 33%) + 9%);
+  bottom: auto;
 }
 
 /* ==========================================================================

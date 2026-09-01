@@ -11,48 +11,55 @@ import { useHasFinePointer, useMotionOK } from '@/hooks/useMediaQuery';
 import { VIDEOS } from '@/lib/media';
 import { SITE } from '@/lib/site';
 
-/** The footage is 16:9. */
-const VIDEO_AR = 16 / 9;
+/** The footage's intrinsic size. */
+const VIDEO = { width: 1280, height: 720 };
 
 /**
  * Where the sculpted lettering sits inside the frame, normalised to it.
  *
- * Measured off the footage: "The" caps begin about 8.5% down, "of Coffee" ends
- * about 98.5% down, and horizontally the words run from roughly 20% to 98.5%.
- * Everything outside that box is wall, table and falling beans — croppable.
+ * Measured off the footage across the whole loop, not off one frame: the
+ * camera breathes over the ten seconds, so the box is the *union* of where the
+ * words reach at their most spread. "The" caps begin about 10% down, "of
+ * Coffee" runs all the way to the bottom edge, and the words span roughly 15%
+ * to 89% across. Everything outside that is wall, table and falling beans —
+ * croppable.
+ *
+ * Now that the landscape framing shows the frame whole, only the horizontal
+ * pair is still consulted — it decides the narrowest screen on which a crop
+ * could ever have held the words, and therefore where the portrait fallback
+ * takes over. Re-measure whenever the footage is replaced.
  */
-const TEXT = { top: 0.085, bottom: 0.985, left: 0.2, right: 0.985 };
+const TEXT = { top: 0.1, bottom: 0.995, left: 0.15, right: 0.89 };
 
 /**
- * Fill the frame without cutting the words.
+ * Below this aspect the screen is portrait: the footage is so much wider than
+ * the section that covering it would leave a quarter of the frame's width on
+ * screen and nothing readable. That case gets the stacked layout — the picture
+ * as a band at the head of the section, the copy on paper beneath it.
  *
- * `object-fit: cover` always crops the overflowing axis from *both* ends
- * equally, which is exactly wrong here: the frame carries a generous empty
- * margin on one side of the lettering and almost none on the other. So the
- * crop is aimed instead — the visible window slides until it holds the whole
- * text box, and is only centred on the text when the window is genuinely too
- * small to contain it. That is the difference between "of Coffee" sitting a
- * few pixels inside the bottom edge and being sliced off it.
- *
- * Returns the `object-position` percentage for the cropped axis.
+ * Everything above it covers. Always. No bars, on any axis, at any size.
  */
-function aimCrop(visible: number, near: number, far: number): number {
-  // How far the window can travel inside the source.
-  const travel = 1 - visible;
-  if (travel <= 0.0001) return 0.5;
+const STACK_BELOW_ASPECT = 1.2;
 
-  const span = far - near;
-  const start =
-    visible >= span
-      ? // Roomy: anywhere between flush with the far edge of the text and
-        // flush with the near edge works. Sit in the middle of that range.
-        (far - visible + near) / 2
-      : // Tight: nothing can hold all of it, so lose as little as possible
-        // from each end.
-        (near + far) / 2 - visible / 2;
+/**
+ * Breathing room kept between the lettering and the edge of the section, as a
+ * share of it — stacked layouts only, where it is free.
+ *
+ * Sizing the band so the words fit *exactly* leaves them flush against both
+ * edges, which reads as cut even though every letter is there.
+ */
+const TEXT_MARGIN = 0.03;
 
-  return Math.min(Math.max(start, 0), travel) / travel;
-}
+/**
+ * When a cover crop cannot hold the whole headline, which end pays.
+ *
+ * At 0.5 the loss is split evenly. Above it, more comes off the top — which is
+ * what you want here: the top of the frame is "The", a small article with
+ * empty wall above it, while the bottom is "of Coffee" set large. Losing a
+ * little off an article reads as framing; losing the same off the payoff line
+ * reads as a mistake.
+ */
+const CROP_BIAS_TOP = 0.75;
 
 /**
  * HERO
@@ -82,38 +89,76 @@ export function Hero() {
     const root = rootRef.current;
     if (!root) return;
 
-    const video = root.querySelector<HTMLVideoElement>('video');
-    if (!video) return;
+    const frame = root.querySelector<HTMLElement>('.hero-frame');
+    // Scoped to the frame, not the section: the blurred fill is a second
+    // <video> and it renders first, so an unscoped query styles the wrong one.
+    const video = frame?.querySelector<HTMLVideoElement>('video');
+    if (!video || !frame) return;
 
     const apply = () => {
       const { width, height } = root.getBoundingClientRect();
       if (!width || !height) return;
 
-      const aspect = width / height;
+      const cover = Math.max(width / VIDEO.width, height / VIDEO.height);
+      const stacked = width / height < STACK_BELOW_ASPECT;
 
-      // Below about 5:4 the screen is so much narrower than the frame that a
-      // cover crop would take most of the words with it. Nothing is worth
-      // that, so the frame becomes a band at the head of the section and the
-      // copy takes the paper underneath.
-      if (aspect < 1.25) {
-        video.style.objectFit = 'contain';
-        video.style.objectPosition = '50% 0%';
-        return;
+      // Place a box of `size` inside `box` so that the span between `near` and
+      // `far` — the lettering — is shown as fully as possible, and never so
+      // that a gap opens at either end.
+      const place = (box: number, size: number, near: number, far: number, bias = 0.5) => {
+        const a = near * size;
+        const b = far * size;
+        const span = b - a;
+
+        // Fits: centre the words. Does not: split the shortfall, `bias` of it
+        // taken off the near end.
+        const offset = span <= box ? (box - span) / 2 - a : -(a + (span - box) * bias);
+
+        // The clamp is the promise. Whatever the words want, the picture never
+        // pulls away from an edge.
+        return Math.min(Math.max(offset, box - size), 0);
+      };
+
+      let scale = cover;
+
+      if (stacked) {
+        // Portrait: shrink to whatever shows the whole headline, plus a margin
+        // so it is not flush against the sides. The band is short either way,
+        // so this costs nothing that was going to be seen.
+        const fitsWords = Math.min(
+          width / ((TEXT.right - TEXT.left) * VIDEO.width),
+          height / ((TEXT.bottom - TEXT.top) * VIDEO.height)
+        );
+        scale = Math.min(cover, fitsWords * (1 - TEXT_MARGIN * 2));
+        // ...but never below full width, or the band grows side bars.
+        scale = Math.max(scale, width / VIDEO.width);
       }
 
-      video.style.objectFit = 'cover';
+      const w = VIDEO.width * scale;
+      const h = VIDEO.height * scale;
 
-      if (aspect >= VIDEO_AR) {
-        // Wider than the frame: cover scales to the width and crops height.
-        const visible = VIDEO_AR / aspect;
-        const p = aimCrop(visible, TEXT.top, TEXT.bottom);
-        video.style.objectPosition = `50% ${(p * 100).toFixed(2)}%`;
-      } else {
-        // Taller than the frame: cover scales to the height and crops width.
-        const visible = aspect / VIDEO_AR;
-        const p = aimCrop(visible, TEXT.left, TEXT.right);
-        video.style.objectPosition = `${(p * 100).toFixed(2)}% 50%`;
-      }
+      const x = place(width, w, TEXT.left, TEXT.right);
+      const y = stacked ? 0 : place(height, h, TEXT.top, TEXT.bottom, CROP_BIAS_TOP);
+
+      video.style.objectFit = 'fill';
+      // The base stylesheet caps every video at `max-width: 100%`, which
+      // silently clamps the width set below back to the container and quietly
+      // undoes the whole calculation. It has to be lifted where the size is
+      // deliberate.
+      video.style.maxWidth = 'none';
+      video.style.maxHeight = 'none';
+      video.style.width = `${w.toFixed(2)}px`;
+      video.style.height = `${h.toFixed(2)}px`;
+      video.style.left = `${x.toFixed(2)}px`;
+      video.style.top = `${y.toFixed(2)}px`;
+      frame.style.inset = '0%';
+
+      // Everything below the picture keys off this rather than a hard-coded
+      // percentage. The band is about a quarter of a phone but nearly half of
+      // a portrait tablet, and a fixed stop that clears the first cuts through
+      // the second — taking "of Coffee" with it.
+      root.style.setProperty('--hero-frame-bottom', `${(((y + h) / height) * 100).toFixed(2)}%`);
+      root.classList.toggle('hero-stacked', stacked);
     };
 
     apply();
@@ -229,20 +274,27 @@ export function Hero() {
           `object-fit` and `object-position` are both set from JS — see
           `aimCrop`. Classes here would only fight it. */}
       <div className="hero-stage reveal absolute inset-0 will-change-[opacity,transform]">
-        <BackgroundVideo src={VIDEOS.hero1} eager playbackRate={0.85} />
+        {/* Whatever the frame does not cover is filled by the same footage,
+            blown up and thrown out of focus. A blurred *still* cannot do this
+            job: it is one average of the whole picture, so it meets the seam
+            with the wrong colour. This matches in tone, in light and in
+            motion, which is what makes the edges disappear. Scaled past the
+            box because a blur of this radius pulls the frame's own edge inward
+            and would otherwise show as a soft line. */}
+        {/* Size and position are both written from JS: the rule depends on the
+            section's measured shape, which no combination of `object-fit` and
+            `object-position` can express. */}
+        <div className="hero-frame absolute inset-0 overflow-hidden [&>video]:absolute">
+          <BackgroundVideo src={VIDEOS.hero} eager playbackRate={0.85} />
+        </div>
       </div>
 
-      {/* Portrait only: the frame is a band at the head of the section there,
-          so this returns the rest of the screen to paper. It starts below the
-          deepest that band can reach, so it never touches the lettering. */}
-      <div
-        aria-hidden
-        className="hero-paper pointer-events-none absolute inset-0 z-1"
-        style={{
-          background:
-            'linear-gradient(180deg, rgb(248 245 239 / 0) 33%, rgb(248 245 239 / 0.9) 42%, rgb(248 245 239 / 1) 50%)',
-        }}
-      />
+      {/* Where the picture is a band at the head of the section, this returns
+          the rest of the screen to paper. The gradient lives in globals.css so
+          that it can key off `--hero-frame-bottom`: an inline one would win
+          over that rule and pin the fade back to a fixed percentage, which is
+          precisely what used to wash out "of Coffee" on a tablet. */}
+      <div aria-hidden className="hero-paper pointer-events-none absolute inset-0 z-1" />
 
       {/* ---------- The copy ---------- */}
       <div

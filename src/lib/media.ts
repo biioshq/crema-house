@@ -96,6 +96,6 @@ export const IMAGES = {
 export type ImageKey = keyof typeof IMAGES;
 
 export const VIDEOS = {
-  hero1: '/media/hero1.mp4',
+  hero: '/media/herovideo.mp4',
   beans: '/media/beans.mp4',
 } as const;

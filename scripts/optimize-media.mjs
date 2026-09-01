@@ -26,7 +26,7 @@ const slugify = (file) =>
     .toLowerCase();
 
 /** Videos keep hand-picked names so the markup reads intentionally. */
-const VIDEO_NAMES = { hero: 'hero', hero1: 'hero1', scroll: 'beans' };
+const VIDEO_NAMES = { herovideo: 'herovideo', scroll: 'beans' };
 
 const IMAGE_QUALITY = 88;
 const BLUR_WIDTH = 14;
