@@ -4,13 +4,21 @@
  */
 
 export const SITE = {
-  name: 'CRÈMA HOUSE',
-  nameShort: 'CRÈMA',
+  name: 'LO HAALO STREET LOUNGE CAFE',
+  /**
+   * The wordmark is set as a lockup of two parts, not one string: the first
+   * carries the weight and the second trails it, in the navbar and again at
+   * the foot of the page. Splitting it here rather than in the markup is what
+   * keeps the promise above — change the name in this file and it changes
+   * everywhere, including the line break in the giant footer wordmark.
+   */
+  nameShort: 'LO HAALO',
+  nameSuffix: 'STREET LOUNGE CAFE',
   established: 'EST. MMXIV',
   tagline: 'Coffee, considered.',
   description:
     'A slow-roast coffee house where every cup is measured, timed and poured by hand. Single-origin beans, a quiet room, and the patience to do it properly.',
-  url: 'https://cremahouse.example',
+  url: 'https://lohaalo.example',
 } as const;
 
 export const NAV_LINKS = [
@@ -24,7 +32,7 @@ export const CONTACT = {
   addressLines: ['14 Ashworth Lane', 'Bandra West, Mumbai 400050'],
   phone: '+91 22 4000 1400',
   phoneHref: 'tel:+912240001400',
-  email: 'reserve@cremahouse.example',
+  email: 'reserve@lohaalo.example',
   mapsHref: 'https://maps.google.com/?q=Bandra+West+Mumbai',
 } as const;
 
