@@ -1,4 +1,4 @@
-# LO HAALO STREET LOUNGE CAFE
+# CRÈMA HOUSE
 
 A site for a slow-roast coffee house, set as a bright editorial. Next.js 15
 (App Router), TypeScript, Tailwind v4, GSAP + ScrollTrigger, Lenis, and Framer

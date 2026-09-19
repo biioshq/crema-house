@@ -136,23 +136,16 @@ export function Nav() {
             {/* The halo is in the page colour: invisible against paper, and
                 the only thing holding the wordmark together where the
                 transparent pill sits directly on the hero footage. */}
-            {/* Stacked below `sm`, on one baseline above it.
-
-                Twenty-seven letterspaced characters do not fit beside a 44px
-                menu button on a narrow phone — at 320px the single line runs
-                about thirty pixels past it. Stacking is better than shrinking
-                the type to nothing or dropping half the name, and the pill is
-                already tall enough to hold two lines. */}
             <Link
               href="/"
-              className="group relative flex flex-col items-start gap-0.5 py-3.5 -my-3.5 sm:flex-row sm:items-baseline sm:gap-2.5"
+              className="group relative flex items-baseline gap-2.5 py-3.5 -my-3.5"
               style={{ textShadow: '0 1px 14px rgb(248 245 239 / 0.9)' }}
             >
-              <span className="font-sans text-label leading-none font-semibold tracking-[0.2em] whitespace-nowrap text-ink sm:tracking-[0.26em]">
+              <span className="font-sans text-label font-semibold tracking-[0.26em] text-ink">
                 {SITE.nameShort}
               </span>
-              <span className="font-sans text-[0.6rem] leading-none font-medium tracking-[0.18em] whitespace-nowrap text-ink-soft transition-colors duration-200 group-hover:text-gold-deep sm:text-micro sm:tracking-[0.3em]">
-                {SITE.nameSuffix}
+              <span className="font-sans text-micro font-medium text-ink-soft transition-colors duration-200 group-hover:text-gold-deep">
+                HOUSE
               </span>
             </Link>
 

@@ -247,23 +247,15 @@ export function Footer() {
         {/* The font-size lives on the wrapper so the em-based padding below
             scales with the wordmark. That padding matters: `leading-[0.82]`
             crops the line box above the cap height, and a background-clipped
-            gradient only paints inside its own box — without it the descenders
-            and diacritics fall outside and lose their fill.
-
-            Two lines, broken on the lockup rather than left to wrap. The name
-            is twenty-seven characters; on one line it would set at about 5vw
-            to fit, which is a caption rather than a signature. Split, each
-            line can be three times that — and the break lands where the
-            wordmark already divides instead of wherever the box runs out. */}
-        <div className="relative pt-[0.2em] text-[8.4vw] leading-[0.86] tracking-[-0.015em]">
+            gradient only paints inside its own box — without the padding the
+            grave accent on the E falls outside it and loses its fill. */}
+        <div className="relative pt-[0.2em] text-[15.5vw] leading-[0.82] tracking-[-0.02em]">
           {/* Engraved base */}
           <span
             aria-hidden
             className="display-face block text-center text-[1em] leading-[inherit] tracking-[inherit] text-ink/[0.07]"
           >
-            {SITE.nameShort}
-            <br />
-            {SITE.nameSuffix}
+            {SITE.name}
           </span>
 
           {/* Gilt fill, wiped open by scroll */}
@@ -279,9 +271,7 @@ export function Footer() {
               color: 'transparent',
             }}
           >
-            {SITE.nameShort}
-            <br />
-            {SITE.nameSuffix}
+            {SITE.name}
           </span>
         </div>
       </div>
