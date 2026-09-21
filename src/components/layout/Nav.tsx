@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
 import { Button } from '@/components/ui/button';
 import { Squiggle } from '@/components/illustrations/Doodles';
 import { Magnetic } from '@/components/motion/Magnetic';
@@ -12,7 +11,6 @@ import { useGsap, gsap, ScrollTrigger } from '@/hooks/useGsap';
 import { useIsoLayoutEffect } from '@/hooks/useIsoLayoutEffect';
 import { useMotionOK } from '@/hooks/useMediaQuery';
 import { NAV_LINKS, SITE } from '@/lib/site';
-import { EASE } from '@/lib/ease';
 import { cn } from '@/lib/utils';
 
 /**
@@ -280,80 +278,76 @@ export function Nav() {
           content in a 360px window, with the last of it simply gone. Now the
           content bottom-aligns when there is room and scrolls when there is
           not — `min-h-full` on the inner column is what gives it both. */}
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            id="mobile-menu"
-            ref={panelRef}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Menu"
-            initial={{ clipPath: 'inset(0% 0% 100% 0%)' }}
-            animate={{ clipPath: 'inset(0% 0% 0% 0%)' }}
-            exit={{ clipPath: 'inset(0% 0% 100% 0%)' }}
-            transition={{ duration: 0.55, ease: EASE.curtain }}
-            className="fixed inset-0 z-40 overflow-y-auto overscroll-contain bg-canvas lg:hidden"
-          >
-            {/* The wash sits on the inner column rather than the scroll box, so
-                it covers the whole of a scrolled panel instead of staying
-                pinned to the first screenful. */}
-            <div className="relative flex min-h-full flex-col justify-end">
-              <div
-                aria-hidden
-                className="pointer-events-none absolute inset-0"
-                style={{
-                  background:
-                    'radial-gradient(88% 52% at 50% 104%, rgb(241 231 213 / 0.9), transparent 70%)',
-                }}
-              />
+      <div
+        id="mobile-menu"
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu"
+        data-open={open}
+        // `inert` belt to `visibility: hidden`'s braces. Visibility alone
+        // already takes the links out of the tab order, but inert also stops a
+        // stray programmatic focus or a trackpad gesture reaching a panel that
+        // is not there.
+        inert={!open}
+        className="nav-panel fixed inset-0 z-40 overflow-y-auto overscroll-contain bg-canvas lg:hidden"
+      >
+        {/* The wash sits on the inner column rather than the scroll box, so it
+            covers the whole of a scrolled panel instead of staying pinned to
+            the first screenful. */}
+        <div className="relative flex min-h-full flex-col justify-end">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                'radial-gradient(88% 52% at 50% 104%, rgb(241 231 213 / 0.9), transparent 70%)',
+            }}
+          />
 
-              {/* Clear of the nav pill at the top, and off the home indicator
-                  at the bottom. */}
-              <ul className="shell relative flex flex-col gap-1 pt-24 pb-[max(2.5rem,12vh)]">
-                {NAV_LINKS.map((link, index) => (
-                  <motion.li
-                    key={link.href}
-                    initial={{ y: 42, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: 22, opacity: 0, transition: { duration: 0.3 } }}
-                    transition={{ duration: 0.6, ease: EASE.luxe, delay: 0.1 + index * 0.05 }}
-                  >
-                    <Link
-                      href={link.href}
-                      onClick={() => setOpen(false)}
-                      aria-current={isCurrent(link.href) ? 'page' : undefined}
-                      className={cn(
-                        'display-face block py-2 text-h2',
-                        // The page you are on is marked here too. The desktop
-                        // bar has its wiggle underline; without this the mobile
-                        // menu was the one place on the site that would not
-                        // tell you where you were.
-                        isCurrent(link.href) ? 'text-clay' : 'text-ink'
-                      )}
-                    >
-                      {link.label}
-                    </Link>
-                  </motion.li>
-                ))}
-
-                <motion.li
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ delay: 0.32, duration: 0.45 }}
-                  className="mt-10 sm:mt-14"
+          {/* Clear of the nav pill at the top, and off the home indicator at
+              the bottom. */}
+          <ul className="shell relative flex flex-col gap-1 pt-24 pb-[max(2.5rem,12vh)]">
+            {NAV_LINKS.map((link, index) => (
+              <li
+                key={link.href}
+                className="nav-panel-item"
+                // The stagger is a delay on the way in and nothing on the way
+                // out: items that leave one after another read as the menu
+                // being reluctant to close.
+                style={{ transitionDelay: open ? `${0.1 + index * 0.05}s` : '0s' }}
+              >
+                <Link
+                  href={link.href}
+                  onClick={() => setOpen(false)}
+                  aria-current={isCurrent(link.href) ? 'page' : undefined}
+                  className={cn(
+                    'display-face block py-2 text-h2',
+                    // The page you are on is marked here too. The desktop bar
+                    // has its wiggle underline; without this the mobile menu
+                    // was the one place on the site that would not tell you
+                    // where you were.
+                    isCurrent(link.href) ? 'text-clay' : 'text-ink'
+                  )}
                 >
-                  <Button asChild size="lg" variant="gilt">
-                    <Link href="/reserve" onClick={() => setOpen(false)}>
-                      Reserve a table
-                    </Link>
-                  </Button>
-                </motion.li>
-              </ul>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+
+            <li
+              className="nav-panel-item mt-10 sm:mt-14"
+              style={{ transitionDelay: open ? '0.32s' : '0s' }}
+            >
+              <Button asChild size="lg" variant="gilt">
+                <Link href="/reserve" onClick={() => setOpen(false)}>
+                  Reserve a table
+                </Link>
+              </Button>
+            </li>
+          </ul>
+        </div>
+      </div>
     </>
   );
 }

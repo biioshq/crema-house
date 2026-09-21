@@ -71,7 +71,16 @@ export function RingCard({ item }: RingCardProps) {
       {/* Name and price on one row, the price at the right — the same
           arrangement as the menu grid, so a plate met here is recognisable
           when it turns up again on /menu. */}
-      <span className="mt-3 flex items-start justify-between gap-2.5 px-1 pb-0.5">
+      {/* The price sits *under* the name, not beside it.
+
+          Sharing a row cost the name about 37px of the plate's 114px inner
+          width — the price pill plus its gap — which left roughly eight
+          characters a line. Two lines of that turned "Grilled Chicken
+          Sandwich" into "Grilled Chicken…" on every phone and tablet, because
+          the plate is pinned at its 9rem floor until the viewport reaches
+          847px. Stacked, the name has the full width and the same two lines
+          hold every dish on the list. */}
+      <span className="mt-3 block px-1 pb-0.5">
         {/* Wraps to a second line rather than truncating. A plate on the stand
             is 144px wide on a phone, which is not enough for "Grilled Chicken
             Sandwich" on one line: truncation turned half the list into
@@ -81,13 +90,15 @@ export function RingCard({ item }: RingCardProps) {
             see `.menu-ring-name`. Every plate on a ring has to be the same
             height, and a foot that grew with the name made the stand look like
             it was holding cards of three different sizes. */}
-        <span className="menu-ring-name display-face text-[0.9rem] leading-[1.15] text-ink sm:text-[1.05rem]">
+        {/* The type bump waits for `xl`, not `sm`. `--menu-ring-card` is
+            `clamp(9rem, 17vw, 15.5rem)`, and 17vw does not overtake the 9rem
+            floor until an 847px viewport — so a bump at 640px enlarged the
+            name inside a plate that was still exactly 144px wide, which is
+            the one combination that truncates. */}
+        <span className="menu-ring-name display-face block text-[0.9rem] leading-[1.15] text-ink xl:text-[1.05rem]">
           {item.name}
         </span>
-        {/* Nudged onto the first line's baseline: `items-start` is what keeps
-            the price level with the top of a name that runs to two lines, but
-            it also parks it a shade high against a one-line name. */}
-        <span className="menu-ring-price mt-[0.15rem] shrink-0 font-sans text-[0.72rem] font-medium tracking-[0.03em] text-mute tabular-nums">
+        <span className="menu-ring-price mt-1 block font-sans text-[0.72rem] font-medium tracking-[0.03em] text-mute tabular-nums">
           {formatPrice(item.price)}
         </span>
       </span>

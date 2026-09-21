@@ -896,6 +896,63 @@
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
+    /* Delays have to go too, not just durations. A staggered reveal whose
+       duration is crushed to nothing but whose delay survives is no longer an
+       animation — it is a list of things appearing late, one at a time, for no
+       reason. It also strips the deferred `visibility` on the mobile panel,
+       which would otherwise stay in the tree for half a second after it had
+       finished closing. */
+    transition-delay: 0s !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ==========================================================================
+   Mobile menu — the panel behind the hamburger
+
+   Written as two CSS states rather than a mount/unmount animation. It used to
+   be `<AnimatePresence>` plus five `motion.li`, which meant the whole of
+   `motion` was pulled into the root layout's bundle — on every page, for every
+   visitor, to move one overlay that only exists under 1024px. A clip-path and
+   a transition-delay do the same job for nothing.
+
+   The panel is always rendered. Closed, it is `visibility: hidden`, which is
+   what keeps its links out of the tab order and out of the accessibility tree
+   — and unlike `display: none` it can still be transitioned. The visibility
+   switch is *delayed* on the way out so the curtain has finished wiping before
+   the panel is taken away, and immediate on the way in.
+   ========================================================================== */
+
+.nav-panel {
+  clip-path: inset(0 0 100% 0);
+  visibility: hidden;
+  transition:
+    clip-path 550ms var(--ease-curtain),
+    visibility 0s linear 550ms;
+}
+
+.nav-panel[data-open='true'] {
+  clip-path: inset(0 0 0 0);
+  visibility: visible;
+  transition:
+    clip-path 550ms var(--ease-curtain),
+    visibility 0s linear 0s;
+}
+
+/* The items rise in behind the curtain, and leave twice as fast as they
+   arrive: an exit that takes as long as an entrance reads as a hesitation. */
+.nav-panel-item {
+  opacity: 0;
+  transform: translateY(2.6rem);
+  transition:
+    opacity 300ms var(--ease-luxe),
+    transform 300ms var(--ease-luxe);
+}
+
+.nav-panel[data-open='true'] .nav-panel-item {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 600ms var(--ease-luxe),
+    transform 600ms var(--ease-luxe);
 }

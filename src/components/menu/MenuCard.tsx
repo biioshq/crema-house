@@ -150,7 +150,7 @@ export function MenuCard({ item, index, priority = false, favourite = false }: M
             {/* Category, the only chrome on the whole card. */}
             <span
               data-text="fade"
-              className="absolute top-4 left-4 rounded-full bg-card/92 px-3 py-1.5 font-sans text-[0.62rem] tracking-[0.12em] text-clay-deep uppercase"
+              className="absolute top-4 left-4 rounded-full bg-card/92 px-3 py-1.5 font-sans text-[0.75rem] tracking-wide-sm text-clay-deep uppercase"
             >
               {item.category}
             </span>

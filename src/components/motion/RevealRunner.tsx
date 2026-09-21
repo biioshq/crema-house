@@ -78,6 +78,8 @@ export function RevealRunner() {
   const motionOK = useMotionOK();
   const pathname = usePathname();
   const rescan = useRef<(() => void) | null>(null);
+  /** Re-arms the first-screen pass; a new route has a new first screen. */
+  const reopen = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     // Reduced motion: no timelines, and the CSS pre-hide is already cancelled
@@ -503,9 +505,54 @@ export function RevealRunner() {
 
     // ------------------------------------------------------------- scanning
 
+    /**
+     * Whether the first-screen pass has run. It happens once, after the first
+     * build that the fonts have cleared, and never again — from then on the
+     * ScrollTriggers own everything.
+     */
+    let openedFirstScreen = false;
+    let firstScreenFrame = 0;
+
+    /**
+     * Play whatever is already on screen when the reveals are first built.
+     *
+     * `clamped()` above wraps every start in ScrollTrigger's `clamp()`, which
+     * was added so that a reveal in the last screenful — the footer — cannot
+     * ask to start at a scroll position the page can never reach. It also
+     * clamps the other end, and that is the problem: an element above the fold
+     * asks to start at a *negative* scroll position, and clamping pulls that to
+     * exactly 0.
+     *
+     * ScrollTrigger only runs callbacks when progress changes
+     * (ScrollTrigger.js:1680, `if (clipped !== prevProgress ...)`), and a fresh
+     * trigger's `prevProgress` is 0 (:984). A hero whose start has been clamped
+     * to 0, on a page sitting at scroll 0, therefore has progress 0 and no
+     * change — so `onEnter` never fires and the copy stays in its from-state
+     * until the first scroll nudges progress off zero. Which is exactly what it
+     * looked like: a hero that loads blank and fills in the moment you touch
+     * the wheel.
+     *
+     * So the first screen is opened by hand. `settle()` is the same check the
+     * bottom-of-page sweep uses — on screen and not yet played — and the
+     * timelines keep their own `delay`, so the entrance choreography is
+     * unchanged. A frame is allowed to pass first because the hero writes
+     * `--hero-frame-bottom` and toggles `.hero-stacked` from its own layout
+     * effect, and the rects have to be read after that has landed.
+     */
+    function openFirstScreen() {
+      if (openedFirstScreen || disposed) return;
+      openedFirstScreen = true;
+      firstScreenFrame = requestAnimationFrame(() => {
+        firstScreenFrame = 0;
+        if (disposed) return;
+        entries.forEach((entry) => entry.settle());
+      });
+    }
+
     function flush() {
       if (!fontsReady || disposed) return;
       while (queue.length) queue.shift()!.build();
+      openFirstScreen();
     }
 
     function scan() {
@@ -544,6 +591,9 @@ export function RevealRunner() {
     }
 
     rescan.current = scan;
+    reopen.current = () => {
+      openedFirstScreen = false;
+    };
 
     // ------------------------------------------------------------ lifecycle
 
@@ -616,6 +666,7 @@ export function RevealRunner() {
     return () => {
       disposed = true;
       rescan.current = null;
+      reopen.current = null;
       observer.disconnect();
       window.removeEventListener('scroll', sweep);
       ScrollTrigger.removeEventListener('refresh', sweep);
@@ -623,6 +674,7 @@ export function RevealRunner() {
       window.clearTimeout(fontTimer);
       window.clearTimeout(resizeTimer);
       cancelAnimationFrame(scanFrame);
+      cancelAnimationFrame(firstScreenFrame);
       entries.forEach((entry) => entry.destroy());
       entries.clear();
       queue.length = 0;
@@ -637,6 +689,10 @@ export function RevealRunner() {
   useEffect(() => {
     if (!motionOK) return;
     const frame = requestAnimationFrame(() => {
+      // The incoming page has its own above-the-fold copy, built with the same
+      // clamped starts — so the first screen has to be opened again, not just
+      // rescanned.
+      reopen.current?.();
       rescan.current?.();
       ScrollTrigger.refresh();
     });

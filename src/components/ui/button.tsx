@@ -65,7 +65,10 @@ const buttonVariants = cva(
         ghost: ['text-ink-soft before:bg-clay-wash/70 hover:text-ink'],
       },
       size: {
-        sm: 'h-10 px-5 text-micro',
+        // 44px, not 40: the one place this size is used is the nav Reserve
+        // pill, which appears from 640px up — landscape phones and tablets,
+        // both finger-driven — beside a hamburger that is already size-11.
+        sm: 'h-11 px-5 text-label',
         md: 'h-12 px-7 text-micro',
         lg: 'h-14 px-9 text-label',
         xl: 'h-16 px-11 text-label',

@@ -27,19 +27,24 @@ import { SITE } from '@/lib/site';
  * `document.fonts.ready`, which is what RevealRunner waits on before it splits
  * a single line of text.
  */
+// Only the axes the stylesheet actually varies are requested. Every extra axis
+// is carried in the variable file whether or not a rule ever moves it, and
+// these three were pure weight: `font-variation-settings` appears exactly three
+// times in globals.css and names `SOFT` and `WONK` and nothing else, so
+// Fraunces' `opsz` and Bricolage's `opsz`/`wdth` were being downloaded, on
+// every visit, to sit at their defaults.
 const fraunces = Fraunces({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-fraunces',
   style: ['normal', 'italic'],
-  axes: ['SOFT', 'WONK', 'opsz'],
+  axes: ['SOFT', 'WONK'],
 });
 
 const bricolage = Bricolage_Grotesque({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-bricolage',
-  axes: ['opsz', 'wdth'],
 });
 
 // Caveat's only axis is weight, and next/font errors on an `axes` array for a

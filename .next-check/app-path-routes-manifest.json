@@ -2,8 +2,8 @@
   "/icon.svg/route": "/icon.svg",
   "/_not-found/page": "/_not-found",
   "/page": "/",
-  "/reserve/page": "/reserve",
-  "/story/page": "/story",
   "/menu/page": "/menu",
-  "/voices/page": "/voices"
+  "/voices/page": "/voices",
+  "/story/page": "/story",
+  "/reserve/page": "/reserve"
 }

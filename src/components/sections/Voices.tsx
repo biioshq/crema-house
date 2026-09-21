@@ -283,8 +283,8 @@ export function Voices({
                     className="mt-9 flex flex-wrap items-center gap-x-3 gap-y-2"
                   >
                     <Mark className="size-4 shrink-0" />
-                    <span className="font-sans text-micro text-ink uppercase">{voice.name}</span>
-                    <span className="font-sans text-[0.68rem] tracking-wide-sm text-mute normal-case">
+                    <span className="font-sans text-[0.78rem] text-ink uppercase">{voice.name}</span>
+                    <span className="font-sans text-[0.8rem] text-ink-soft normal-case">
                       {voice.detail}
                     </span>
                     <span

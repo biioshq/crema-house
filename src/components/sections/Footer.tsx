@@ -139,7 +139,14 @@ export function Footer() {
                     onChange={(event) => setEmail(event.target.value)}
                     placeholder="you@example.com"
                     autoComplete="email"
-                    className="w-full bg-transparent py-2.5 font-sans text-body text-ink outline-none placeholder:text-faint"
+                    // Never below 16px. `--text-body` clamps to 15.34px at
+                    // 360px wide, and iOS Safari zooms the viewport on any
+                    // input it focuses that is under 16px — leaving the page
+                    // panned sideways with no way back. The `max()` floors it
+                    // on phones and still tracks the clamp up on desktop; the
+                    // leading is restated because an arbitrary font-size does
+                    // not carry `--text-body--line-height` with it.
+                    className="w-full bg-transparent py-2.5 font-sans text-[max(1rem,var(--text-body))] leading-[1.75] text-ink outline-none placeholder:text-faint"
                   />
                   <button
                     type="submit"
@@ -196,7 +203,7 @@ export function Footer() {
             <dl className="mt-5 space-y-4">
               {HOURS.map((entry) => (
                 <div key={entry.days} data-text="fade">
-                  <dt className="font-sans text-[0.6rem] tracking-wide-sm text-mute uppercase">
+                  <dt className="font-sans text-label tracking-wide-sm text-ink-soft/85 uppercase">
                     {entry.days}
                   </dt>
                   <dd className="mt-1 font-sans text-body text-ink-soft/85 tabular-nums">

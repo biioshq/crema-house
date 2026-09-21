@@ -262,7 +262,12 @@ export function Hero() {
     <section
       ref={rootRef}
       id="top"
-      className="relative isolate h-svh min-h-140 w-full overflow-hidden"
+      // The 35rem floor is itself capped at the viewport. A bare `min-h-140`
+      // beats `h-svh` on any screen shorter than 560px — a landscape phone at
+      // 740x360 got a 560px hero, 200px of it below the fold, which is where
+      // both buttons and the foot of the filmed headline ended up. `min()`
+      // makes the floor a no-op exactly there and changes nothing above it.
+      className="relative isolate h-svh min-h-[min(35rem,100svh)] w-full overflow-hidden"
       style={{ perspective: '1400px', backgroundColor: '#ebe4d8' }}
     >
       {/* ---------- The picture ----------
