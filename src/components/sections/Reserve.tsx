@@ -4,20 +4,27 @@ import { useRef } from 'react';
 import { ArrowUpRight, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Magnetic } from '@/components/motion/Magnetic';
-import { SplitHeading } from '@/components/motion/SplitHeading';
 import { Motes } from '@/components/motion/Motes';
-import { gsap, useGsap } from '@/hooks/useGsap';
+import { Blossom } from '@/components/illustrations/Florals';
+import { Sprig } from '@/components/illustrations/Foliage';
+import { gsap } from '@/hooks/useGsap';
 import { useIsoLayoutEffect } from '@/hooks/useIsoLayoutEffect';
 import { useHasFinePointer, useMotionOK } from '@/hooks/useMediaQuery';
 import { CONTACT, HOURS } from '@/lib/site';
 
 /**
- * SECTION 06 — "Reservations"
+ * "Reservations"
  *
  * The quietest panel on the site and the brightest: a single sheet of white
- * laid on the paper, framed by four gold hairlines that draw themselves in as
- * you arrive. Dust hangs in the light above it, and a soft warm spot follows
- * the pointer across the sheet — the room lights up where you are looking.
+ * laid on the paper, with a soft warm spot that follows the pointer across it
+ * so the room lights up where you are looking. The four clay hairlines that
+ * used to frame the sheet are gone; a coffee flower laid over one corner and
+ * a sprig at the other do the framing now, which is the only kind of line
+ * this page still draws.
+ *
+ * Every piece of copy reveals through `data-text` and both drawings through
+ * `data-ill`, so the only thing this component animates itself is the
+ * spotlight.
  */
 type ReserveProps = {
   /** The /reserve page supplies its own masthead. */
@@ -70,59 +77,6 @@ export function Reserve({ showHeader = true }: ReserveProps) {
     };
   }, [motionOK, finePointer]);
 
-  // --- Frame + copy -------------------------------------------------------
-  useGsap(
-    () => {
-      if (!motionOK) return;
-
-      const tl = gsap.timeline({
-        scrollTrigger: { trigger: rootRef.current, start: 'top 70%', once: true },
-      });
-
-      // /reserve supplies its own masthead, so the eyebrow and the heading are
-      // simply not in the tree there. Adding the tween regardless is not
-      // harmless: GSAP warns for every missing target, and a tween with no
-      // target still occupies its slot on the timeline.
-      if (showHeader) {
-        tl.fromTo(
-          '.reserve-eyebrow',
-          { opacity: 0, y: 12 },
-          { opacity: 1, y: 0, duration: 0.9 },
-          0.5
-        );
-      }
-
-      // The frame draws itself: verticals first, then horizontals.
-      tl.fromTo(
-        ['.reserve-edge-l', '.reserve-edge-r'],
-        { scaleY: 0 },
-        { scaleY: 1, duration: 1.5, ease: 'power3.inOut', stagger: 0.08 },
-        0
-      )
-        .fromTo(
-          ['.reserve-edge-t', '.reserve-edge-b'],
-          { scaleX: 0 },
-          { scaleX: 1, duration: 1.5, ease: 'power3.inOut', stagger: 0.08 },
-          0.25
-        )
-        .fromTo(
-          '.reserve-sub',
-          { opacity: 0, y: 22 },
-          { opacity: 1, y: 0, duration: 1.1 },
-          showHeader ? 1.0 : 0.6
-        )
-        .fromTo(
-          '.reserve-action',
-          { opacity: 0, y: 24 },
-          { opacity: 1, y: 0, duration: 1.1, stagger: 0.1 },
-          1.15
-        )
-        .fromTo('.reserve-hours', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 1 }, 1.3);
-    },
-    [motionOK, showHeader],
-    rootRef
-  );
-
   return (
     <section
       ref={rootRef}
@@ -156,47 +110,46 @@ export function Reserve({ showHeader = true }: ReserveProps) {
 
       <div className="shell relative z-10">
         <div className="card-surface relative rounded-xl px-[6%] py-[clamp(4rem,10vw,8rem)] text-center">
-          {/* Drawn frame, inset from the sheet's own edge. */}
-          <span
-            aria-hidden
-            className="reserve-edge-t absolute inset-x-8 top-8 h-px origin-left bg-linear-to-r from-transparent via-gold/55 to-transparent"
+          {/* Laid over the corners of the sheet, mostly outside it, so neither
+              drawing can sit on a word however the copy wraps. */}
+          <Blossom
+            data-ill
+            data-ill-delay="0.3"
+            className="pointer-events-none absolute -top-6 -left-3 z-10 h-auto w-16 -rotate-12 sm:-top-8 sm:-left-6 sm:w-24 lg:w-28"
           />
-          <span
-            aria-hidden
-            className="reserve-edge-b absolute inset-x-8 bottom-8 h-px origin-right bg-linear-to-r from-transparent via-gold/55 to-transparent"
-          />
-          <span
-            aria-hidden
-            className="reserve-edge-l absolute inset-y-8 left-8 w-px origin-top bg-linear-to-b from-transparent via-gold/45 to-transparent"
-          />
-          <span
-            aria-hidden
-            className="reserve-edge-r absolute inset-y-8 right-8 w-px origin-bottom bg-linear-to-b from-transparent via-gold/45 to-transparent"
+          <Sprig
+            data-ill
+            data-ill-delay="0.6"
+            className="pointer-events-none absolute -right-2 -bottom-5 z-10 h-8 w-auto rotate-[8deg] sm:-right-5 sm:-bottom-7 sm:h-11"
           />
 
           {showHeader && (
             <>
-              <p className="reserve-eyebrow eyebrow reveal">06 — Reservations</p>
+              <p data-text="write" className="eyebrow">
+                Reservations
+              </p>
 
-              <SplitHeading
-                as="h2"
+              <h2
                 id="reserve-heading"
-                mode="chars-blur"
-                start="top 76%"
-                className="mx-auto mt-9 max-w-[12em] text-h2"
+                data-text="scatter"
+                data-text-start="top 76%"
+                className="mx-auto mt-5 max-w-[12em] text-h2"
               >
-                Come and sit for a while.
-              </SplitHeading>
+                Come and sit for a <em className="accent">while</em>.
+              </h2>
             </>
           )}
 
-          <p className="reserve-sub reveal mx-auto mt-10 max-w-[46ch] text-balance font-sans text-lede text-ink-soft/80">
+          <p
+            data-text="words"
+            className="mx-auto mt-9 max-w-[46ch] text-balance font-sans text-lede text-ink-soft/80"
+          >
             Two tables are held back every evening for people who did not plan
             ahead. The rest, we would love you to book.
           </p>
 
           <div className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-5">
-            <span className="reserve-action reveal">
+            <span data-text="fade">
               <Magnetic strength={0.32} padding={44}>
                 <Button asChild size="xl" variant="gilt">
                   <a href={`mailto:${CONTACT.email}?subject=Table%20reservation`}>
@@ -207,7 +160,7 @@ export function Reserve({ showHeader = true }: ReserveProps) {
               </Magnetic>
             </span>
 
-            <span className="reserve-action reveal">
+            <span data-text="fade">
               <Magnetic strength={0.26} padding={34}>
                 <Button asChild size="xl" variant="outline">
                   <a href={CONTACT.phoneHref}>
@@ -219,10 +172,11 @@ export function Reserve({ showHeader = true }: ReserveProps) {
             </span>
           </div>
 
-          {/* Hours */}
-          <dl className="reserve-hours reveal mx-auto mt-12 grid max-w-3xl grid-cols-1 gap-x-10 gap-y-6 sm:grid-cols-3">
+          {/* Hours. Each day is its own reveal, so they arrive across the row
+              rather than as one block of numbers. */}
+          <dl className="mx-auto mt-12 grid max-w-3xl grid-cols-1 gap-x-10 gap-y-6 sm:grid-cols-3">
             {HOURS.map((entry) => (
-              <div key={entry.days} className="text-center">
+              <div key={entry.days} data-text="fade" className="text-center">
                 <dt className="font-sans text-micro text-mute uppercase">{entry.days}</dt>
                 <dd className="mt-2 font-sans text-label tracking-wide-sm text-ink tabular-nums">
                   {entry.time}
@@ -231,7 +185,7 @@ export function Reserve({ showHeader = true }: ReserveProps) {
             ))}
           </dl>
 
-          <p className="reserve-hours reveal mt-12 font-sans text-micro text-faint uppercase">
+          <p data-text="fade" className="mt-12 font-sans text-micro text-faint uppercase">
             {CONTACT.addressLines.join(' · ')}
           </p>
         </div>

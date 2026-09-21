@@ -4,10 +4,12 @@ import Link from 'next/link';
 import { useRef } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { RevealImage } from '@/components/media/RevealImage';
-import { SplitHeading } from '@/components/motion/SplitHeading';
 import { Counter } from '@/components/motion/Counter';
 import { Magnetic } from '@/components/motion/Magnetic';
 import { Button } from '@/components/ui/button';
+import { Daisy } from '@/components/illustrations/Florals';
+import { CoffeeBranch } from '@/components/illustrations/Foliage';
+import { Arrow, Squiggle } from '@/components/illustrations/Doodles';
 import { gsap, useGsap } from '@/hooks/useGsap';
 import { useIsoLayoutEffect } from '@/hooks/useIsoLayoutEffect';
 import { useHasFinePointer, useMotionOK } from '@/hooks/useMediaQuery';
@@ -22,20 +24,74 @@ const STATS = [
 ] as const;
 
 /**
- * SECTION 02 — "The Room"
+ * "The Room"
  *
  * A spread, not a section. The photograph sits in the outer half of the page
- * with a second frame overlapping its corner, the copy holds a narrow column
- * against acres of paper, and a gold rule draws itself across the gutter as
- * the two halves arrive. The plates float — the shadow is what does the
- * work — and lean fractionally towards the pointer.
+ * with a second frame overlapping its corner, and the copy holds a narrow
+ * column against acres of paper. The plates float (the shadow is what does
+ * the work) and lean fractionally towards the pointer.
+ *
+ * The hand-made layer is drawn over the top like pencil on a proof: a coffee
+ * branch tucked over the photo's corner, a scribbled note pointing at the
+ * espresso, a squiggle under the one word that matters and a daisy beside the
+ * numbers. Every piece of text and ink is revealed by the shared runner via
+ * `data-text` / `data-ill`; this component only owns the parallax, the
+ * pointer tilt and the squiggle's placement.
  */
 export function Story() {
   const rootRef = useRef<HTMLElement>(null);
   const tiltRef = useRef<HTMLDivElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const underlineRef = useRef<HTMLSpanElement>(null);
 
   const motionOK = useMotionOK();
   const finePointer = useHasFinePointer();
+
+  // --- Squiggle placement ---------------------------------------------------
+  // The underline lives outside the heading (the runner splits and rebuilds
+  // the heading's markup, which would orphan anything nested in it), so it is
+  // pinned under the accent word by measurement: once now, again when the
+  // webfonts land, and whenever the heading reflows.
+  useIsoLayoutEffect(() => {
+    const heading = headingRef.current;
+    const underline = underlineRef.current;
+    const frame = heading?.parentElement;
+    if (!heading || !underline || !frame) return;
+
+    const place = () => {
+      const word = heading.querySelector('em');
+      if (!word) return;
+      const box = frame.getBoundingClientRect();
+      // A single word never wraps, so its last client rect is the word.
+      const rects = word.getClientRects();
+      const rect = rects[rects.length - 1] ?? word.getBoundingClientRect();
+      if (!rect.width) return;
+
+      const width = rect.width * 1.04;
+
+      underline.style.left = `${rect.left - box.left - rect.height * 0.04}px`;
+      underline.style.top = `${rect.bottom - box.top - rect.height * 0.14}px`;
+      underline.style.width = `${width}px`;
+      // Height comes from the width, not from the word: the squiggle's viewBox
+      // is 200x20, and DrawSVG has to measure the path to draw it on — which
+      // it cannot do on a non-scaling pen inside a box that has been stretched
+      // unevenly (Chrome warns and the length comes back wrong). Holding the
+      // 10:1 ratio keeps the scale uniform, and at this type size it lands
+      // within a pixel or two of where a share of the cap height would.
+      underline.style.height = `${width / 10}px`;
+    };
+
+    place();
+    const observer = new ResizeObserver(place);
+    observer.observe(heading);
+    let alive = true;
+    document.fonts?.ready.then(() => alive && place());
+
+    return () => {
+      alive = false;
+      observer.disconnect();
+    };
+  }, []);
 
   // --- Pointer tilt -------------------------------------------------------
   useIsoLayoutEffect(() => {
@@ -86,12 +142,12 @@ export function Story() {
     });
   }, [motionOK, finePointer]);
 
-  // --- Scroll choreography ------------------------------------------------
+  // --- Scroll parallax ----------------------------------------------------
   useGsap(
     () => {
       if (!motionOK) return;
 
-      // The columns travel at different rates — the plates lag, the copy leads.
+      // The columns travel at different rates: the plates lag, the copy leads.
       gsap.fromTo(
         '.story-media',
         { yPercent: 4 },
@@ -106,44 +162,6 @@ export function Story() {
           },
         }
       );
-
-      gsap.fromTo(
-        '.story-numeral',
-        { yPercent: 14, opacity: 0 },
-        {
-          yPercent: -14,
-          opacity: 1,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: rootRef.current,
-            start: 'top bottom',
-            end: 'bottom top',
-            scrub: 1.4,
-          },
-        }
-      );
-
-      // Copy, rule and stats arrive as one sequence.
-      gsap
-        .timeline({
-          scrollTrigger: { trigger: '.story-copy', start: 'top 78%', once: true },
-        })
-        .fromTo('.story-eyebrow', { opacity: 0, x: -14 }, { opacity: 1, x: 0, duration: 0.9 }, 0)
-        .fromTo('.story-body', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 1.1 }, 0.55)
-        .fromTo(
-          '.story-rule',
-          { scaleX: 0 },
-          { scaleX: 1, duration: 1.5, ease: 'power3.inOut' },
-          0.7
-        )
-        .fromTo(
-          '.story-stat',
-          { opacity: 0, y: 16 },
-          { opacity: 1, y: 0, duration: 1, stagger: 0.13 },
-          0.85
-        )
-        .fromTo('.story-caption', { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 1 }, 0.4)
-        .fromTo('.story-cta', { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 1 }, 1.05);
     },
     [motionOK],
     rootRef
@@ -167,21 +185,18 @@ export function Story() {
         }}
       />
 
-      {/* Oversized section numeral, sunk into the paper. */}
-      <span
-        aria-hidden
-        className="story-numeral display-face pointer-events-none absolute -top-4 right-[-2vw] -z-10 text-[26vw] leading-none text-ink/[0.035] lining-nums select-none lg:right-[3vw] lg:text-[15vw]"
-      >
-        02
-      </span>
-
       <div className="shell relative z-10">
-        <div className="flex flex-col gap-12 lg:flex-row lg:items-start lg:justify-between lg:gap-[7%]">
+        <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between lg:gap-[7%]">
           {/* ------------------------------ Media ------------------------------ */}
-          <div className="story-media relative w-full lg:w-[50%]">
+          {/* Bottom padding keeps room for the inset and the note that hang
+              below the photograph, so neither can drift into the copy. */}
+          <div className="story-media relative w-full pb-20 sm:pb-24 lg:w-[50%] lg:pb-28">
             <div className="relative flex gap-6 lg:gap-8">
               {/* Vertical caption running up the outer edge */}
-              <p className="story-caption reveal hidden shrink-0 self-end pb-2 font-sans text-micro text-mute uppercase [writing-mode:vertical-rl] lg:block lg:rotate-180">
+              <p
+                data-text="fade"
+                className="hidden shrink-0 self-end pb-2 font-sans text-micro text-mute uppercase [writing-mode:vertical-rl] lg:block lg:rotate-180"
+              >
                 {CONTACT.addressLines[0]} · Bandra West
               </p>
 
@@ -192,13 +207,21 @@ export function Story() {
               >
                 <RevealImage
                   asset={IMAGES.cafe}
-                  alt="The room at Crèma House — warm lamplight over timber tables and a brick wall"
+                  alt="The room at Crèma House: warm lamplight over timber tables and a brick wall"
                   direction="up"
                   edge
                   parallax={6}
                   sizes="(min-width: 1024px) 50vw, 92vw"
                   objectPosition="48% 58%"
                   className="aspect-[4/5] rounded-lg shadow-lift"
+                />
+
+                {/* A coffee branch laid over the top corner of the print, the
+                    way a sprig gets tucked into a frame. */}
+                <CoffeeBranch
+                  data-ill
+                  data-ill-delay="0.5"
+                  className="pointer-events-none absolute -top-8 -left-3 z-10 h-auto w-[44%] max-w-[18rem] -rotate-12 sm:-top-12 sm:-left-8 lg:-top-14 lg:-left-12"
                 />
 
                 {/* A detail from the bar, wiping in over the outer corner —
@@ -215,67 +238,111 @@ export function Story() {
                     className="aspect-square rounded-lg shadow-lift"
                   />
                 </div>
+
+                {/* The margin note: scribbled under the photograph, its arrow
+                    curling up at the espresso. Decorative, so hidden from
+                    assistive tech (the inset's alt already says what it is). */}
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute right-[50%] -bottom-[4.75rem] flex items-end gap-1 sm:right-[46%] sm:-bottom-[5.5rem] lg:right-[38%] lg:-bottom-[6.25rem]"
+                >
+                  <p
+                    data-text="pop"
+                    data-text-delay="0.6"
+                    className="font-hand text-[1.55rem] leading-none font-semibold whitespace-nowrap text-clay sm:text-[1.75rem] lg:text-[1.95rem]"
+                  >
+                    the good stuff
+                  </p>
+                  <Arrow
+                    data-ill
+                    data-ill-delay="0.9"
+                    className="mb-3 h-auto w-11 shrink-0 -rotate-[28deg] sm:w-14 lg:w-16"
+                  />
+                </div>
               </div>
             </div>
           </div>
 
           {/* ------------------------------ Copy ------------------------------- */}
-          <div className="story-copy relative w-full pt-10 lg:w-[40%] lg:pt-[5vw]">
-            <p className="story-eyebrow eyebrow reveal">02 — The Room</p>
+          <div className="relative w-full lg:w-[40%] lg:pt-[5vw]">
+            <p data-text="write" className="eyebrow">
+              The room
+            </p>
 
-            <SplitHeading
-              as="h2"
-              mode="words-flip"
-              start="top 80%"
-              id="story-heading"
-              className="mt-7 text-h2"
-            >
-              A room built around one <em className="text-gilt not-italic">obsession</em>.
-            </SplitHeading>
+            <div className="relative mt-4">
+              <h2
+                ref={headingRef}
+                id="story-heading"
+                data-text="flip"
+                data-text-delay="0.1"
+                className="text-h2"
+              >
+                A room built around one <em className="accent">obsession</em>.
+              </h2>
+              <span
+                ref={underlineRef}
+                aria-hidden
+                className="pointer-events-none absolute top-full left-0 block h-4 w-0"
+              >
+                <Squiggle
+                  data-ill
+                  data-ill-delay="0.9"
+                  className="block h-full w-full text-clay"
+                />
+              </span>
+            </div>
 
-            <SplitHeading
-              as="p"
-              mode="lines-rise"
-              start="top 84%"
-              stagger={0.075}
+            <p
+              data-text="lines"
+              data-text-stagger="0.075"
               className="mt-10 max-w-[44ch] font-sans text-lede text-ink-soft/85"
             >
               We took a corner unit on Ashworth Lane, stripped it back to brick, and
               pointed every lamp at the bar. Nothing hangs on the walls that
               isn&rsquo;t about the cup.
-            </SplitHeading>
+            </p>
 
-            <p className="story-body reveal mt-7 max-w-[46ch] font-sans text-body text-mute">
+            <p
+              data-text="words"
+              className="mt-7 max-w-[46ch] font-sans text-body text-mute"
+            >
               Green beans land on Tuesday. They are roasted Wednesday, rested four
-              days, and pulled no sooner than Sunday — never before the sugars have
+              days, and pulled no sooner than Sunday. Never before the sugars have
               settled.
             </p>
 
-            <div className="story-rule rule-gold mt-9 origin-left" />
-
             {/* ----------------------------- Stats ----------------------------- */}
-            <dl className="mt-12 grid grid-cols-3 gap-x-5 gap-y-8 sm:gap-x-8">
-              {STATS.map((stat) => (
-                <div key={stat.label} className="story-stat reveal">
-                  <dt className="sr-only">{stat.label}</dt>
-                  <dd>
-                    <Counter
-                      value={stat.value}
-                      className="display-face text-[clamp(2.6rem,5.2vw,3.6rem)] text-ink"
-                    />
-                    <span aria-hidden className="mt-3 block h-px w-8 bg-gold/80" />
-                    <span
-                      aria-hidden
-                      className="mt-3 block max-w-[16ch] text-balance font-sans text-[0.6rem] leading-[1.6] tracking-wide-sm text-mute uppercase"
-                    >
-                      {stat.label}
-                    </span>
-                  </dd>
-                </div>
-              ))}
-            </dl>
+            <div className="relative mt-16">
+              <Daisy
+                data-ill
+                data-ill-delay="0.3"
+                className="pointer-events-none absolute -top-12 right-0 h-auto w-10 rotate-12 sm:w-12"
+              />
 
-            <div className="story-cta reveal mt-9">
+              <dl className="grid grid-cols-3 gap-x-5 gap-y-8 sm:gap-x-8">
+                {STATS.map((stat) => (
+                  // The counter rewrites its own digits, so the reveal sits on
+                  // this static wrapper rather than on the number.
+                  <div key={stat.label} data-text="fade">
+                    <dt className="sr-only">{stat.label}</dt>
+                    <dd>
+                      <Counter
+                        value={stat.value}
+                        className="display-face text-[clamp(2.6rem,5.2vw,3.6rem)] text-ink"
+                      />
+                      <span
+                        aria-hidden
+                        className="mt-3 block max-w-[16ch] text-balance font-sans text-[0.8rem] leading-snug text-mute"
+                      >
+                        {stat.label}
+                      </span>
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+
+            <div data-text="fade" className="mt-10">
               <Magnetic strength={0.28} padding={36}>
                 <Button asChild size="lg" variant="outline">
                   <Link href="/story">

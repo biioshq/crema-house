@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useRef } from 'react';
+import { Heart } from '@/components/illustrations/Doodles';
 import { gsap } from '@/lib/gsap';
 import { useIsoLayoutEffect } from '@/hooks/useIsoLayoutEffect';
 import { useHasFinePointer, useMotionOK } from '@/hooks/useMediaQuery';
@@ -13,6 +14,8 @@ type MenuCardProps = {
   item: MenuItem;
   index: number;
   priority?: boolean;
+  /** Pins a handwritten "house favourite" sticker to the corner of the plate. */
+  favourite?: boolean;
 };
 
 /**
@@ -20,15 +23,19 @@ type MenuCardProps = {
  *
  * A white plate floating on paper: the photograph is matted inside the card
  * rather than bleeding to its edge, which is the single detail that separates
- * a boutique from a bistro. Under it, the fine-dining leader — name, a gold
- * hairline running the gap, price — so the price always lands on the same
- * baseline no matter how long the name is.
+ * a boutique from a bistro. Under it, a handwritten "no." and the dish name
+ * with its price in a small pill at the right of the same row, so the price
+ * sits in the same place on every card however long the name runs.
+ *
+ * Every piece of text carries a `data-text` mode, so the shared RevealRunner
+ * plays it in as the card rises: the name letter by letter, the note line by
+ * line, the chip, number and price as quiet fades.
  *
  * The hover choreography (lift, zoom, deeper shadow, glowing price) is one
  * shared block in globals.css, so all four moves are guaranteed to run on the
  * same curve for the same duration and the card reads as a single object.
  */
-export function MenuCard({ item, index, priority = false }: MenuCardProps) {
+export function MenuCard({ item, index, priority = false, favourite = false }: MenuCardProps) {
   const cardRef = useRef<HTMLElement>(null);
   const asset = IMAGES[item.id];
 
@@ -140,32 +147,68 @@ export function MenuCard({ item, index, priority = false }: MenuCardProps) {
               }}
             />
 
-            {/* Category — the only chrome on the whole card. */}
-            <span className="absolute top-4 left-4 rounded-full bg-card/92 px-3 py-1.5 font-sans text-[0.58rem] tracking-[0.24em] text-gold-deep uppercase">
+            {/* Category, the only chrome on the whole card. */}
+            <span
+              data-text="fade"
+              className="absolute top-4 left-4 rounded-full bg-card/92 px-3 py-1.5 font-sans text-[0.62rem] tracking-[0.12em] text-clay-deep uppercase"
+            >
               {item.category}
             </span>
+
+            {/* A paper sticker slapped on the plate: the note pops, then its
+                heart draws itself on over the sticker's corner. The tilt lives
+                on the wrapper so the pop tween never has to fight it.
+
+                The plate clips, so the sticker is held far enough off the
+                corner that the heart's overhang still lands inside it — at a
+                tighter inset the heart was sliced in half by the rounded
+                edge. */}
+            {favourite && (
+              <span className="absolute top-5 right-5 rotate-[5deg]">
+                <span
+                  data-text="pop"
+                  data-text-delay="0.35"
+                  className="block rounded-full bg-card/95 px-3.5 pt-1 pb-1.5 font-hand text-[1.2rem] leading-none font-semibold text-clay shadow-[0_6px_18px_-8px_rgb(74_53_39/0.45)]"
+                >
+                  house favourite
+                </span>
+                <Heart
+                  data-ill
+                  data-ill-delay="0.6"
+                  className="absolute -top-3 -right-3 size-5 -rotate-[12deg]"
+                />
+              </span>
+            )}
           </div>
 
           {/* ------------------------------- Foot ------------------------------ */}
-          <div className="px-2 pt-7 pb-4 sm:px-3 sm:pt-8 sm:pb-5">
-            <p className="font-sans text-[0.58rem] tracking-[0.3em] text-faint tabular-nums uppercase">
-              {String(index + 1).padStart(2, '0')}
+          <div className="px-2 pt-6 pb-4 sm:px-3 sm:pt-7 sm:pb-5">
+            <p
+              data-text="write"
+              className="font-hand text-[1.15rem] leading-none font-semibold text-clay/85"
+            >
+              no. {index + 1}
             </p>
 
-            {/* The leader. `items-baseline` plus a flexible rule is what keeps
-                every price in the column on exactly the same line. */}
-            <div className="mt-3 flex items-baseline gap-3">
-              <h3 className="text-h3 leading-none text-ink">{item.name}</h3>
+            {/* Name and price share one row. `items-start` keeps the pill level
+                with the first line when a long name wraps onto a second. */}
+            <div className="mt-2.5 flex items-start justify-between gap-4">
+              <h3 data-text="chars" className="text-h3 leading-[1.08] text-ink">
+                {item.name}
+              </h3>
               <span
-                aria-hidden
-                className="h-px min-w-6 flex-1 translate-y-[-0.15em] bg-linear-to-r from-hair via-hair to-gold/45"
-              />
-              <span className="menu-price shrink-0 font-sans text-label font-medium text-ink tabular-nums">
+                data-text="fade"
+                data-text-delay="0.2"
+                className="menu-price mt-1 shrink-0 rounded-full border border-hair bg-canvas/70 px-3 py-1 font-sans text-[0.8rem] font-medium tracking-[0.03em] text-ink tabular-nums"
+              >
                 {formatPrice(item.price)}
               </span>
             </div>
 
-            <p className="mt-4 max-w-[34ch] font-sans text-[0.8rem] leading-[1.75] text-mute">
+            <p
+              data-text="lines"
+              className="mt-4 max-w-[34ch] font-sans text-[0.84rem] leading-[1.7] text-mute"
+            >
               {item.note}
             </p>
           </div>

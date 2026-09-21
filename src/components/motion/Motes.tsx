@@ -114,7 +114,7 @@ export function Motes({ count = 9, className, opacity = 0.6, seed = 0x51ce }: Mo
             // elements forces a dozen offscreen passes every frame, and this
             // looks the same.
             background: mote.warm
-              ? 'radial-gradient(circle, rgb(221 184 119 / 0.55) 0%, rgb(221 184 119 / 0.16) 46%, transparent 70%)'
+              ? 'radial-gradient(circle, rgb(224 147 122 / 0.55) 0%, rgb(224 147 122 / 0.16) 46%, transparent 70%)'
               : 'radial-gradient(circle, rgb(255 255 255 / 0.9) 0%, rgb(255 255 255 / 0.3) 44%, transparent 70%)',
           }}
         />

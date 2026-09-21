@@ -7,14 +7,14 @@ import { VOICES } from '@/lib/voices';
 export const metadata: Metadata = {
   title: 'Voices',
   description:
-    'What regulars say about the room — novelists, architects, pastry chefs, and people who have been coming since 2016.',
+    'What our regulars say about the room, from a novelist who writes here on Tuesdays to people who have been coming since 2016.',
 };
 
 export default function VoicesPage() {
   return (
     <>
       <PageHeader
-        eyebrow="05 — Voices"
+        eyebrow="Voices"
         title="What the room says back."
         numeral="05"
         mode="mask-wipe"

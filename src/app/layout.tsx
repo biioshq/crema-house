@@ -1,43 +1,81 @@
 import type { Metadata, Viewport } from 'next';
-import { Cormorant_Garamond, Inter } from 'next/font/google';
+import { Fraunces, Bricolage_Grotesque, Caveat } from 'next/font/google';
 import './globals.css';
 
 import { SmoothScroll } from '@/components/layout/SmoothScroll';
+import { RevealRunner } from '@/components/motion/RevealRunner';
 import { Nav } from '@/components/layout/Nav';
 import { Grain } from '@/components/layout/Grain';
 import { Footer } from '@/components/sections/Footer';
 import { SITE } from '@/lib/site';
 
 /**
- * Display: Cormorant Garamond — a high-contrast old-style with long, fine
- * hairlines. Held at 300 for the very large sizes, where a heavier weight
- * would read as a magazine cover rather than a five-star lobby.
- * Text: Inter, for the micro-labels and body copy.
+ * Display: Fraunces — a soft, slightly wonky old-style with real optical
+ * sizing. The variable file carries three axes beyond weight: SOFT (rounds the
+ * terminals), WONK (swaps in the cheerfully off-kilter alternates) and opsz.
+ * `display-face` in globals.css pins SOFT 100 / WONK 1, which is the whole
+ * point of choosing it — a default-axis Fraunces just reads as another
+ * high-contrast serif.
+ *
+ * Text: Bricolage Grotesque — a grotesque with a bit of hand in it, so the
+ * labels and body copy stop reading as a system UI font.
+ *
+ * Hand: Caveat — eyebrows, stickers and margin notes.
+ *
+ * One variable file per family (two for Fraunces, which has a drawn italic
+ * used for accent words), because every face downloaded here delays
+ * `document.fonts.ready`, which is what RevealRunner waits on before it splits
+ * a single line of text.
  */
-const cormorant = Cormorant_Garamond({
+const fraunces = Fraunces({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-cormorant',
-  // Cormorant is not a variable font: every weight and every style is a
-  // separate file. The display face is set at 300 everywhere on the site and
-  // the two <em>s that exist are both `not-italic`, so the other six faces
-  // were downloaded for nothing — and every one of them delayed
-  // `document.fonts.ready`, which is what every split-text reveal waits on.
-  weight: ['300', '400'],
-  style: ['normal'],
+  variable: '--font-fraunces',
+  style: ['normal', 'italic'],
+  axes: ['SOFT', 'WONK', 'opsz'],
 });
 
-const inter = Inter({
+const bricolage = Bricolage_Grotesque({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-inter',
+  variable: '--font-bricolage',
+  axes: ['opsz', 'wdth'],
 });
+
+// Caveat's only axis is weight, and next/font errors on an `axes` array for a
+// font with nothing else to define.
+const caveat = Caveat({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-caveat',
+});
+
+/**
+ * Pre-hide script.
+ *
+ * The reveal states are set by JS, but the elements are hidden by CSS keyed on
+ * `data-js` — so text is only ever invisible on a page that actually has
+ * JavaScript running. Inline and synchronous in <head> so the attribute is on
+ * <html> before the first paint; setting it from React would flash the copy.
+ * It is an attribute written by a script rather than rendered by React, so
+ * there is nothing for hydration to disagree about.
+ *
+ * The 3.5s timer is the guarantee of last resort: if the runner never gets as
+ * far as claiming the page (a chunk that fails to load, a throw during
+ * hydration), the attribute comes off and every `data-text` element falls back
+ * to plain, visible text.
+ */
+const PRE_HIDE = `(function(){try{var d=document.documentElement;
+if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+d.setAttribute('data-js','');
+setTimeout(function(){if(!d.hasAttribute('data-reveal-live'))d.removeAttribute('data-js');},3500);
+}catch(e){}})();`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   title: {
-    default: `${SITE.name} — ${SITE.tagline}`,
-    template: `%s — ${SITE.name}`,
+    default: `${SITE.name} · ${SITE.tagline}`,
+    template: `%s · ${SITE.name}`,
   },
   description: SITE.description,
   applicationName: SITE.name,
@@ -51,7 +89,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     siteName: SITE.name,
-    title: `${SITE.name} — ${SITE.tagline}`,
+    title: `${SITE.name} · ${SITE.tagline}`,
     description: SITE.description,
     locale: 'en_IN',
     images: [
@@ -60,7 +98,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: `${SITE.name} — ${SITE.tagline}`,
+    title: `${SITE.name} · ${SITE.tagline}`,
     description: SITE.description,
     images: ['/media/og.jpg'],
   },
@@ -76,7 +114,18 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${cormorant.variable} ${inter.variable}`}>
+    // suppressHydrationWarning is scoped to this one element's attributes, and
+    // it is here for exactly one reason: the pre-hide script below writes
+    // `data-js` onto <html> before React hydrates, and React 19 compares the
+    // root element's attributes against what the server sent.
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${fraunces.variable} ${bricolage.variable} ${caveat.variable}`}
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: PRE_HIDE }} />
+      </head>
       <body>
         {/* The warm pools that light the page. A fixed element rather than a
             fixed background — see .page-glow in globals.css. */}
@@ -90,6 +139,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </a>
 
         <SmoothScroll>
+          {/* One runner for the whole site: it animates every element carrying
+              data-text and every illustration carrying data-ill, wherever they
+              are rendered. Inside SmoothScroll so its ScrollTriggers and
+              Lenis share the single RAF loop. */}
+          <RevealRunner />
           <Nav />
           {/* The footer is a sibling of <main>, not part of it. */}
           <main id="main">{children}</main>

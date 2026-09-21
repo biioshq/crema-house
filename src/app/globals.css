@@ -3,7 +3,7 @@
 /* ==========================================================================
    CRÈMA HOUSE — design tokens
    A bright editorial palette: warm paper, oat, porcelain-white cards, and a
-   single soft-gold accent. Nothing is flat; every surface carries either a
+   single burnt-clay accent. Nothing is flat; every surface carries either a
    gradient, a grain, or a shadow.
    ========================================================================== */
 
@@ -22,45 +22,72 @@
   --color-faint: #b3aa9c; /* the quietest text on the page     */
 
   /* --- Accent -------------------------------------------------------- */
-  --color-gold: #c49a52;
-  --color-gold-lit: #ddb877;
-  --color-gold-deep: #9a7534;
-  --color-gold-wash: #f1e7d5;
+  /* Terracotta, not gold. Soft gold on cream is the house style of every
+     generated "luxury" site going; the same layout in burnt clay reads as
+     something a person chose. It is also the colour the illustrations are
+     printed in, so the accent and the artwork agree. */
+  --color-clay: #c4674c;
+  --color-clay-lit: #e0937a;
+  --color-clay-deep: #9a422b;
+  --color-clay-wash: #f6e2d9;
+
+  /* --- Hand-drawn palette --------------------------------------------
+     The inks and washes the illustrations are printed in. Deliberately a
+     small, flat, poster-like set: outlines in one brown, everything else a
+     single soft fill. */
+  --color-cocoa: #4a3527; /* illustration ink (outlines)       */
+  --color-clay-soft: #f4d9cf; /* the palest wash of it             */
+  --color-blush: #f2c4b5; /* petals                            */
+  --color-sage: #9fb08c; /* leaves                            */
+  --color-sage-deep: #5e7050; /* leaf veins, stems                 */
+  --color-butter: #f3d98b; /* flower centres, sparkles          */
+  --color-cherry: #b8433a; /* coffee cherries, hearts           */
 
   /* --- Type ----------------------------------------------------------
-     Display: Cormorant Garamond — a high-contrast old-style that echoes the
-     sculpted letters standing in the hero footage. Text: Inter. */
-  --font-display: var(--font-cormorant), ui-serif, 'Iowan Old Style', Georgia, serif;
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
+     Display: Fraunces, held soft and wonky (see `display-face` below) — an
+     old-style with rounded terminals and a few cheerfully off-kilter
+     alternates, which is what keeps the headings from reading as stock
+     luxury-template serif. Text: Bricolage Grotesque. Hand: Caveat. */
+  --font-display: var(--font-fraunces), ui-serif, 'Iowan Old Style', Georgia, serif;
+  --font-sans: var(--font-bricolage), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-hand: var(--font-caveat), 'Segoe Script', 'Bradley Hand', cursive;
 
-  /* Fluid editorial scale. Line-heights tighten as size grows. */
-  --text-micro: 0.6875rem;
+  /* Fluid editorial scale. Line-heights tighten as size grows.
+
+     Retuned for Fraunces, which is wider per character and taller in the
+     x-height than the Cormorant it replaced: every display size comes down,
+     and the line-heights come up off the 0.94 that only a high-contrast
+     old-style with short descenders could carry. */
+  --text-micro: 0.72rem;
   --text-micro--line-height: 1.2;
-  --text-micro--letter-spacing: 0.3em;
+  --text-micro--letter-spacing: 0.14em;
 
-  --text-label: 0.75rem;
+  --text-label: 0.78rem;
   --text-label--line-height: 1.4;
-  --text-label--letter-spacing: 0.22em;
+  --text-label--letter-spacing: 0.1em;
 
   --text-body: clamp(0.95rem, 0.9rem + 0.26vw, 1.0625rem);
-  --text-body--line-height: 1.8;
+  --text-body--line-height: 1.75;
 
-  --text-lede: clamp(1.125rem, 1rem + 0.7vw, 1.5rem);
-  --text-lede--line-height: 1.62;
+  --text-lede: clamp(1.1rem, 1rem + 0.6vw, 1.42rem);
+  --text-lede--line-height: 1.6;
 
-  --text-h3: clamp(1.6rem, 1.2rem + 1.7vw, 2.6rem);
-  --text-h3--line-height: 1.12;
+  --text-h3: clamp(1.5rem, 1.2rem + 1.3vw, 2.3rem);
+  --text-h3--line-height: 1.16;
+  --text-h3--letter-spacing: -0.008em;
 
-  --text-h2: clamp(2.5rem, 1.5rem + 4.2vw, 5.75rem);
-  --text-h2--line-height: 1;
-  --text-h2--letter-spacing: -0.018em;
+  --text-h2: clamp(2.15rem, 1.35rem + 3.3vw, 4.6rem);
+  --text-h2--line-height: 1.04;
+  --text-h2--letter-spacing: -0.014em;
 
-  --text-h1: clamp(3rem, 1.6rem + 6.4vw, 8rem);
-  --text-h1--line-height: 0.94;
-  --text-h1--letter-spacing: -0.022em;
+  --text-h1: clamp(2.6rem, 1.5rem + 5vw, 6.4rem);
+  --text-h1--line-height: 1;
+  --text-h1--letter-spacing: -0.018em;
 
-  --tracking-luxe: 0.3em;
-  --tracking-wide-sm: 0.16em;
+  /* Wide tracking is the "AI luxury template" tell. These are as far as the
+     site goes now, and only on genuinely small uppercase labels. */
+  --tracking-luxe: 0.12em;
+  --tracking-wide-sm: 0.08em;
 
   /* --- Rhythm --------------------------------------------------------
      Whitespace is the loudest thing on this page — but loud is not the same
@@ -81,7 +108,7 @@
   --shadow-lift:
     0 4px 10px rgb(58 43 22 / 0.05), 0 30px 66px -24px rgb(58 43 22 / 0.2),
     0 70px 130px -60px rgb(58 43 22 / 0.22);
-  --shadow-glow: 0 0 0 1px rgb(196 154 82 / 0.24), 0 22px 60px -22px rgb(196 154 82 / 0.42);
+  --shadow-glow: 0 0 0 1px rgb(196 103 76 / 0.24), 0 22px 60px -22px rgb(196 103 76 / 0.42);
   --shadow-pill: 0 1px 2px rgb(58 43 22 / 0.05), 0 12px 30px -14px rgb(58 43 22 / 0.28);
 
   /* --- Motion --------------------------------------------------------
@@ -174,12 +201,17 @@
     overflow: hidden;
   }
 
+  /* SOFT rounds the terminals, WONK swaps in the off-kilter alternates. Both
+     are the reason this face was chosen; at their default 0 Fraunces is just
+     another high-contrast serif. Weight 400, not 300: the soft cut needs the
+     extra body or the large sizes go spindly. */
   h1,
   h2,
   h3,
   h4 {
     font-family: var(--font-display);
-    font-weight: 300;
+    font-weight: 400;
+    font-variation-settings: 'SOFT' 100, 'WONK' 1;
     color: var(--color-ink);
     margin: 0;
     text-wrap: balance;
@@ -210,12 +242,12 @@
   }
 
   ::selection {
-    background: var(--color-gold-wash);
+    background: var(--color-clay-wash);
     color: var(--color-ink);
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-gold);
+    outline: 2px solid var(--color-clay);
     outline-offset: 3px;
     border-radius: 2px;
   }
@@ -224,7 +256,7 @@
      The scrollbar, set as furniture rather than left as a browser artefact.
 
      A hairline of oat runs down the margin — the same rule that divides
-     everything else on the page — and the thumb is a single warm gold pill
+     everything else on the page — and the thumb is a single warm clay pill
      floating inside it, inset by a transparent border so it never touches
      the rule. It thickens by two pixels under the pointer, which is the only
      affordance a bar this quiet needs.
@@ -242,12 +274,12 @@
      Chrome *disables* the pseudo-elements outright the moment it sees either
      of them on the element, standard-first. Left unfenced, everything below
      this is dead code in Chrome and Edge and the bar falls back to a flat
-     gold slab. `-moz-appearance` is the fence: measured false in Chrome 151,
+     flat slab. `-moz-appearance` is the fence: measured false in Chrome 151,
      true in Firefox. */
   @supports (-moz-appearance: none) {
     html {
       scrollbar-width: thin;
-      scrollbar-color: var(--color-gold) transparent;
+      scrollbar-color: var(--color-clay) transparent;
     }
   }
 
@@ -270,9 +302,9 @@
     background-clip: content-box;
     background-image: linear-gradient(
       180deg,
-      var(--color-gold-lit) 0%,
-      var(--color-gold) 46%,
-      var(--color-gold-deep) 100%
+      var(--color-clay-lit) 0%,
+      var(--color-clay) 46%,
+      var(--color-clay-deep) 100%
     );
   }
 
@@ -280,15 +312,15 @@
     border-width: 2px;
     background-image: linear-gradient(
       180deg,
-      var(--color-gold-lit) 0%,
-      var(--color-gold-lit) 40%,
-      var(--color-gold) 100%
+      var(--color-clay-lit) 0%,
+      var(--color-clay-lit) 40%,
+      var(--color-clay) 100%
     );
   }
 
   ::-webkit-scrollbar-thumb:active {
     border-width: 2px;
-    background-image: linear-gradient(180deg, var(--color-gold) 0%, var(--color-gold-deep) 100%);
+    background-image: linear-gradient(180deg, var(--color-clay) 0%, var(--color-clay-deep) 100%);
   }
 
   /* No arrow buttons, and no grey square where two bars would meet. */
@@ -315,19 +347,45 @@
    headings — the wordmark, oversized numerals, pull quotes. */
 @utility display-face {
   font-family: var(--font-display);
-  font-weight: 300;
+  font-weight: 400;
+  font-variation-settings: 'SOFT' 100, 'WONK' 1;
   color: var(--color-ink);
-  line-height: 0.94;
+  line-height: 1;
 }
 
-/* Uppercase micro-label used above every section heading. */
+/* The handwritten label above every section heading. Previously an uppercase
+   clay micro-label with a third of an em between letters, which is the single
+   most template-looking thing a page can wear; now it is a note in the margin,
+   in sentence case, at a size you can actually read. */
 @utility eyebrow {
-  font-family: var(--font-sans);
-  font-size: var(--text-micro);
-  font-weight: 500;
-  letter-spacing: var(--tracking-luxe);
-  text-transform: uppercase;
-  color: var(--color-gold-deep);
+  font-family: var(--font-hand);
+  font-size: clamp(1.35rem, 1.15rem + 0.6vw, 1.8rem);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-clay);
+}
+
+/* Accent words inside a heading: the same face, drawn italic, in terracotta.
+   Replaces the clay-gradient `text-gilt` treatment wherever a *word* rather
+   than a surface is being accented. */
+@utility accent {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-variation-settings: 'SOFT' 100, 'WONK' 1;
+  color: var(--color-clay);
+}
+
+/* Handwritten notes, stickers and margin annotations. */
+@utility hand-note {
+  font-family: var(--font-hand);
+  font-size: clamp(1.15rem, 1rem + 0.5vw, 1.5rem);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: 0;
+  color: var(--color-clay);
 }
 
 /* The floating white card used by the menu, the gallery and the testimonials. */
@@ -355,29 +413,29 @@
   );
 }
 
-/* The gold divider — a single hair of light, brightest in the middle. */
-@utility rule-gold {
+/* The clay divider — a single hair of light, brightest in the middle. */
+@utility rule-clay {
   height: 1px;
   width: 100%;
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgb(196 154 82 / 0.14) 12%,
-    rgb(196 154 82 / 0.72) 50%,
-    rgb(196 154 82 / 0.14) 88%,
+    rgb(196 103 76 / 0.14) 12%,
+    rgb(196 103 76 / 0.72) 50%,
+    rgb(196 103 76 / 0.14) 88%,
     transparent 100%
   );
 }
 
-/* Gold gradient text for accented words inside headlines. */
+/* Clay gradient text for accented words inside headlines. */
 @utility text-gilt {
   background: linear-gradient(
     100deg,
-    var(--color-gold-deep) 0%,
-    var(--color-gold) 34%,
-    var(--color-gold-lit) 50%,
-    var(--color-gold) 66%,
-    var(--color-gold-deep) 100%
+    var(--color-clay-deep) 0%,
+    var(--color-clay) 34%,
+    var(--color-clay-lit) 50%,
+    var(--color-clay) 66%,
+    var(--color-clay-deep) 100%
   );
   background-size: 200% 100%;
   -webkit-background-clip: text;
@@ -385,7 +443,9 @@
   color: transparent;
 }
 
-/* Split-text primitives. The JS splitter only adds spans; the look lives here. */
+/* A one-line overflow mask. The old hand-rolled splitter is gone (SplitText
+   does that job now), but Counter still wraps its digits in one of these so a
+   rolling number is clipped to its own line. */
 @utility split-line {
   display: block;
   overflow: hidden;
@@ -393,12 +453,51 @@
   margin-block: -0.1em;
 }
 
-@utility split-char {
-  display: inline-block;
-  /* No `filter` — nothing animates one per character any more (see the
-     chars-blur branch of SplitHeading), and hinting a filter that never
-     arrives buys every glyph an offscreen surface for nothing. */
+/* ==========================================================================
+   Reveal engine — see components/motion/RevealRunner.tsx
+
+   Plain CSS, not `@utility`: these class names only ever appear in a
+   JavaScript string, and Tailwind emits a utility only for a class it can find
+   in the source. A utility here would simply not exist in the stylesheet.
+   ========================================================================== */
+
+/* The pre-hide. Keyed on `data-js`, which an inline <head> script sets before
+   first paint and removes again after 3.5s if the runner never claims the
+   page — so nothing can be left invisible by a reveal that failed to load,
+   and a scriptless client sees plain, complete copy. */
+[data-js] [data-text]:not([data-text-ready]),
+[data-js] [data-ill]:not([data-ill-ready]) {
+  opacity: 0;
+}
+
+/* SplitText's line masks clip with `overflow: clip`, which cuts at the padding
+   box — so a little vertical padding is what keeps a descender from being
+   sheared off while the line rides up out of the mask. */
+.rv-line-mask {
+  padding-block: 0.1em;
+  margin-block: -0.1em;
+}
+
+.rv-line {
   will-change: transform, opacity;
+}
+
+.rv-word,
+.rv-char {
+  will-change: transform, opacity;
+}
+
+/* Illustration parts. `non-scaling-stroke` lives on the components; this is
+   only the bit the runner needs to be true before it touches them. */
+.ill-draw {
+  will-change: stroke-dashoffset;
+}
+
+.ill-pop,
+.ill-sway,
+.ill-spin,
+.ill-twinkle {
+  will-change: transform;
 }
 
 /* "Hidden until its reveal plays."
@@ -412,6 +511,14 @@
 
 @media (prefers-reduced-motion: reduce) {
   .reveal {
+    opacity: 1;
+  }
+
+  /* RevealRunner does nothing under reduced motion, so the pre-hide has to
+     stand down with it — an element only ever un-hidden by an animation you
+     have opted out of is just an invisible element. */
+  [data-js] [data-text]:not([data-text-ready]),
+  [data-js] [data-ill]:not([data-ill-ready]) {
     opacity: 1;
   }
 }
@@ -448,6 +555,35 @@
     rgb(248 245 239 / 0.9) calc(var(--hero-frame-bottom, 33%) + 7%),
     rgb(248 245 239 / 1) calc(var(--hero-frame-bottom, 33%) + 14%)
   );
+}
+
+/* The blossom in the wall beside the lettering.
+
+   Filled: it starts just past where the sculpted words end and is capped by
+   the wall that is actually left, so on a wide screen it is a full spray and
+   on a tight one it shrinks away rather than climbing onto "of Coffee".
+   Stacked: the words run nearly the full width of the band, so there is no
+   wall to stand in; the spray moves to the paper just under the picture's
+   right corner instead, clear of both the footage and the copy below it. */
+.hero-bloom {
+  /* Pulled back over the last of the lettering's shadow rather than parked
+     beside it: the out-of-focus patch the spray is meant to fill starts a
+     little before the words end, so a spray that begins exactly where they
+     stop leaves the blur uncovered and looks parked in the corner. */
+  left: calc(var(--hero-text-right, 100%) - 2.5rem);
+  bottom: max(0px, calc(100% - var(--hero-frame-bottom, 100%)));
+  /* Capped by the wall that is actually left, so the spray shrinks away on a
+     narrow screen instead of climbing onto "of Coffee". The half rem of slack
+     is what the leftward shift above buys back. */
+  width: clamp(0px, calc(var(--hero-right-gap, 0px) + 0.5rem), 11rem);
+}
+
+.hero-stacked .hero-bloom {
+  left: auto;
+  right: 1rem;
+  bottom: auto;
+  top: calc(var(--hero-frame-bottom, 33%) + 0.4rem);
+  width: clamp(3.5rem, 15vw, 6rem);
 }
 
 .hero-stacked .hero-front {
@@ -499,7 +635,7 @@
   .menu-card:hover .menu-card-shell,
   .menu-card:focus-within .menu-card-shell {
     transform: translate3d(0, -0.9rem, 4rem);
-    border-color: rgb(196 154 82 / 0.42);
+    border-color: rgb(196 103 76 / 0.42);
   }
 
   .menu-card:hover .menu-card-inner::after,
@@ -514,8 +650,205 @@
 
   .menu-card:hover .menu-price,
   .menu-card:focus-within .menu-price {
-    color: var(--color-gold-deep);
-    text-shadow: 0 0 22px rgb(221 184 119 / 0.85);
+    color: var(--color-clay-deep);
+    text-shadow: 0 0 22px rgb(224 147 122 / 0.85);
+  }
+}
+
+/* ==========================================================================
+   Menu ring — the vitrine as a turntable
+
+   The geometry lives here rather than in the component so that one clamp
+   decides the card, the radius and the height together. The radius is the
+   number that matters: ten plates on a circle need at least
+   `w / (2·tan(18°))` ≈ 1.54w between the axis and the card or neighbours
+   intersect in plan, whatever the perspective does to hide it. 1.66 is that
+   minimum plus a little air.
+
+   Plain CSS, not `@utility`: these class names only ever appear in a
+   JavaScript string or a component's `className`, and several are written to
+   from MenuRing.tsx — see the note on the reveal engine above.
+   ========================================================================== */
+
+.menu-ring {
+  --menu-ring-card: clamp(9rem, 17vw, 15.5rem);
+  --menu-ring-radius: calc(var(--menu-ring-card) * 1.66);
+
+  /* Out to the gutter on both sides. The ring is wider than the text column
+     it sits under, and plates that run off the edge are what tells you the
+     circle continues past the screen. */
+  margin-inline: calc(var(--spacing-gutter) * -1);
+}
+
+.menu-ring-viewport {
+  /* Tall enough for the *projected* front plate, not the laid-out one. The
+     plate facing you sits a whole radius nearer the eye, so the perspective
+     draws it at `2.8 / (2.8 - 1)` ≈ 1.56× its own box — a height sized to the
+     card itself would let it spill over the caption beneath. */
+  height: calc(var(--menu-ring-card) * 1.56 + 7.5rem);
+  /* Tied to the radius rather than fixed, so the ring is foreshortened
+     identically at every size: a constant depth would give a phone almost no
+     perspective at all and a wide desktop far too much. 2.8 is shallow enough
+     that the turn reads as a turn without distorting the near plate's
+     corners. */
+  perspective: calc(var(--menu-ring-radius) * 2.8);
+  /* A touch above centre, so the stand is read the way one on a counter is. */
+  perspective-origin: 50% 46%;
+  /* Horizontal belongs to the ring, vertical still belongs to the page.
+     Without this a downward swipe that starts on a plate is swallowed and the
+     section becomes a scroll trap on a phone. */
+  touch-action: pan-y;
+  cursor: grab;
+}
+
+.menu-ring-viewport.is-dragging {
+  cursor: grabbing;
+}
+
+.menu-ring-stage {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.menu-ring-slot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--menu-ring-card);
+  margin-left: calc(var(--menu-ring-card) / -2);
+  transform-style: preserve-3d;
+  /* The far half of the ring is simply not drawn. This is what keeps ten
+     plates from reading as a scribble, and it is cheaper than sorting them:
+     no z-index bookkeeping, no z-fighting between two cards that happen to
+     share a depth. */
+  backface-visibility: hidden;
+}
+
+/* The warmth the ring stands in. An ellipse rather than a box shadow, because
+   what is being suggested is the pool of light under a stand, not the edge of
+   a card — and because a single blurred gradient costs one layer where ten
+   shadows would cost ten. */
+.menu-ring-floor {
+  position: absolute;
+  left: 50%;
+  bottom: 0.25rem;
+  width: calc(var(--menu-ring-radius) * 2.5);
+  height: calc(var(--menu-ring-card) * 0.4);
+  translate: -50% 0;
+  pointer-events: none;
+  background: radial-gradient(
+    50% 50% at 50% 50%,
+    rgb(74 53 39 / 0.16) 0%,
+    rgb(74 53 39 / 0.05) 46%,
+    transparent 74%
+  );
+  filter: blur(8px);
+}
+
+/* --------------------------------------------------------------------------
+   The plate
+   The same four moves as the menu grid's card — lift, zoom, warm the border,
+   light the price — on the same curve, so a plate behaves the same wherever
+   it is met. The lift is a `translateZ` rather than a `translateY`: inside a
+   ring, coming *towards* the viewer is what "picking it up" looks like.
+   -------------------------------------------------------------------------- */
+
+.menu-ring-card {
+  transition:
+    transform 600ms var(--ease-luxe),
+    border-color 600ms var(--ease-luxe),
+    box-shadow 600ms var(--ease-luxe);
+}
+
+.menu-ring-plate img {
+  transition: transform 900ms var(--ease-luxe);
+}
+
+.menu-ring-price {
+  transition: color 700ms var(--ease-luxe);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .menu-ring-card:hover,
+  .menu-ring-card:focus-visible {
+    transform: translateZ(2.4rem);
+    border-color: rgb(196 103 76 / 0.42);
+    box-shadow: var(--shadow-lift);
+  }
+
+  .menu-ring-card:hover .menu-ring-plate img,
+  .menu-ring-card:focus-visible .menu-ring-plate img {
+    transform: scale(1.06);
+  }
+
+  .menu-ring-card:hover .menu-ring-price,
+  .menu-ring-card:focus-visible .menu-ring-price {
+    color: var(--color-clay-deep);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Under the ring
+   -------------------------------------------------------------------------- */
+
+.menu-ring-foot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.75rem, 2.5vw, 1.5rem);
+  margin-inline: auto;
+  margin-top: 0.5rem;
+  padding-inline: var(--spacing-gutter);
+  max-width: 46rem;
+}
+
+/* Fixed height so the line does not reflow the controls as the note changes
+   length from one plate to the next. Two lines is the longest note there is. */
+.menu-ring-caption {
+  flex: 1;
+  /* Reserved, not measured. Without a floor the controls walk up and down the
+     page every time the note changes length — and in the narrow column left
+     beside two buttons on a phone, a note runs to four lines where it takes
+     two on a desktop. */
+  min-height: 4.75rem;
+  text-align: center;
+  text-wrap: balance;
+}
+
+@media (min-width: 640px) {
+  .menu-ring-caption {
+    min-height: 3.25rem;
+  }
+}
+
+.menu-ring-nav {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 9999px;
+  border: 1px solid var(--color-hair);
+  background: rgb(255 255 255 / 0.7);
+  color: var(--color-ink-soft);
+  box-shadow: var(--shadow-soft);
+  cursor: pointer;
+  transition:
+    background-color 500ms var(--ease-luxe),
+    border-color 500ms var(--ease-luxe),
+    color 500ms var(--ease-luxe);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .menu-ring-nav:hover {
+    background: rgb(255 255 255);
+    border-color: rgb(196 103 76 / 0.5);
+    color: var(--color-clay-deep);
   }
 }
 

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <!-- The same cup-from-above as the nav lockup (components/layout/Wordmark.tsx),
+       padded into a rounded tile. Stroke widths are a touch heavier than the
+       component's: the mark there is drawn with non-scaling-stroke and keeps a
+       1.6px pen at any size, where a favicon is rasterised at 16px and a
+       proportional 1.6 would vanish. -->
+  <rect width="48" height="48" rx="11" fill="#f8f5ef"/>
+  <g transform="translate(4 4)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path transform="translate(1.1 -0.9)" fill="#c4674c" stroke="none"
+      d="M20.1 7.9 C26.8 7.7 32.3 13.2 32.1 20.1 C31.9 26.7 26.5 32.2 19.9 32.1 C13.2 32 7.8 26.4 7.9 19.8 C8 13.2 13.5 8 20.1 7.9 Z"/>
+    <path stroke="#4a3527" stroke-opacity="0.45" stroke-width="1.6"
+      d="M20 2.4 C29.9 2.2 37.8 10.1 37.6 20.2 C37.4 30 29.6 37.8 19.8 37.6 C10 37.4 2.2 29.4 2.4 19.6 C2.6 10 10.2 2.6 20 2.4 Z"/>
+    <path stroke="#4a3527" stroke-width="2.2"
+      d="M20.1 7.9 C26.8 7.7 32.3 13.2 32.1 20.1 C31.9 26.7 26.5 32.2 19.9 32.1 C13.2 32 7.8 26.4 7.9 19.8 C8 13.2 13.5 8 20.1 7.9 Z"/>
+    <path stroke="#ffffff" stroke-width="2.4" stroke-opacity="0.94"
+      d="M19.6 20.8 C18.3 18.9 20.3 16.7 22.6 17.6 C25.5 18.7 25.9 22.6 23.1 24.4 C19.8 26.6 15.1 24.1 14.7 19.8 C14.2 14.7 19.3 11 24.6 12.3"/>
+  </g>
+</svg>

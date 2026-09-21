@@ -6,14 +6,14 @@ import { ReserveStrip } from '@/components/sections/ReserveStrip';
 export const metadata: Metadata = {
   title: 'Our Story',
   description:
-    'How a photocopy shop on Ashworth Lane became a slow-roast coffee house — the lease, the roast, and the rules we kept.',
+    'How a photocopy shop on Ashworth Lane became a slow-roast coffee house, and the rules we have kept ever since.',
 };
 
 export default function StoryPage() {
   return (
     <>
       <PageHeader
-        eyebrow="02 — Our Story"
+        eyebrow="Our story"
         title="A room built around one obsession."
         numeral="02"
         mode="words-flip"

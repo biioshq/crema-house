@@ -1,8 +1,10 @@
 'use client';
 
-import { useRef, type ReactNode } from 'react';
+import { useRef, type ComponentType, type ReactNode, type SVGProps } from 'react';
 import { SplitHeading, type SplitMode } from '@/components/motion/SplitHeading';
 import { Motes } from '@/components/motion/Motes';
+import { Blossom, CupBouquet, Daisy, Tulip } from '@/components/illustrations/Florals';
+import { Sprig } from '@/components/illustrations/Foliage';
 import { gsap, useGsap } from '@/hooks/useGsap';
 import { useMotionOK } from '@/hooks/useMediaQuery';
 
@@ -19,14 +21,69 @@ type PageHeaderProps = {
   id?: string;
 };
 
+type Ornament = {
+  Art: ComponentType<SVGProps<SVGSVGElement>>;
+  /** Sized by height so the eyebrow row keeps its baseline on every page. */
+  className: string;
+  /** Reveal mode for the lede, varied with the drawing. */
+  lede: 'lines' | 'words';
+};
+
+/**
+ * One drawing per masthead, chosen by the page's numeral.
+ *
+ * Every sub-page shares this component, so without a map they would all open
+ * with the same ornament and the four headers would read as one template with
+ * the words swapped. Keyed on the numeral rather than on a new prop because
+ * the numeral is the one thing each page already declares about itself.
+ *
+ * The pieces are picked so that no page shows the same drawing twice: the
+ * menu's own `CupBouquet` only renders with the section header it hides on
+ * /menu, and the pressed flowers on /voices are Blossom and Sprig.
+ */
+const ORNAMENTS: Record<string, Ornament> = {
+  // Our story
+  '02': { Art: Blossom, className: 'h-14 w-auto sm:h-16 lg:h-20', lede: 'lines' },
+  // The menu
+  '03': { Art: CupBouquet, className: 'h-16 w-auto sm:h-20 lg:h-24', lede: 'words' },
+  // Voices
+  '05': { Art: Daisy, className: 'h-12 w-auto sm:h-14 lg:h-16', lede: 'words' },
+  // Reservations
+  '06': { Art: Tulip, className: 'h-16 w-auto sm:h-20 lg:h-24', lede: 'lines' },
+};
+
+const FALLBACK: Ornament = {
+  Art: Sprig,
+  className: 'mb-1 h-8 w-auto sm:h-10',
+  lede: 'lines',
+};
+
+/**
+ * Sets the last word of the title in the clay italic accent. The pages pass a
+ * plain string, so the emphasis is applied here rather than asked of them.
+ */
+function accentLastWord(text: string) {
+  const at = text.trimEnd().lastIndexOf(' ');
+  if (at < 0) return <em className="accent">{text}</em>;
+  return (
+    <>
+      {text.slice(0, at + 1)}
+      <em className="accent">{text.slice(at + 1)}</em>
+    </>
+  );
+}
+
 /**
  * The masthead every sub-page opens with.
  *
  * Sub-pages have no hero footage to fall into, so the header does that work
  * instead: a tall band of paper lit from above, the page numeral engraved
- * into it, dust hanging in the light, and the title arriving on the page's
- * own reveal mode. Triggers fire immediately here rather than on scroll —
- * this content is above the fold by definition.
+ * into it, dust hanging in the light, and a drawing tucked beside the
+ * handwritten label like something inked in the margin.
+ *
+ * The text and the drawing are revealed declaratively (`data-text`,
+ * `data-ill`) by the shared RevealRunner; all this component still owns is
+ * the numeral's scroll drift, which is a parallax rather than a reveal.
  */
 export function PageHeader({
   eyebrow,
@@ -39,40 +96,30 @@ export function PageHeader({
   const rootRef = useRef<HTMLElement>(null);
   const motionOK = useMotionOK();
 
+  const ornament = (numeral && ORNAMENTS[numeral]) || FALLBACK;
+  const { Art } = ornament;
+
   useGsap(
     () => {
-      if (!motionOK) return;
+      if (!motionOK || !numeral) return;
 
-      gsap
-        .timeline({ delay: 0.2 })
-        .fromTo('.page-eyebrow', { opacity: 0, x: -14 }, { opacity: 1, x: 0, duration: 0.9 }, 0)
-        .fromTo('.page-lede', { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 1.1 }, 0.6)
-        .fromTo(
-          '.page-rule',
-          { scaleX: 0 },
-          { scaleX: 1, duration: 1.5, ease: 'power3.inOut' },
-          0.45
-        );
-
-      if (numeral) {
-        // Drift only — no opacity ramp. The header sits at scroll 0, so a
-        // scrubbed fade-in would leave the numeral invisible exactly where it
-        // is meant to be read.
-        gsap.fromTo(
-          '.page-numeral',
-          { yPercent: 8 },
-          {
-            yPercent: -14,
-            ease: 'none',
-            scrollTrigger: {
-              trigger: rootRef.current,
-              start: 'top top',
-              end: 'bottom top',
-              scrub: 1.4,
-            },
-          }
-        );
-      }
+      // Drift only — no opacity ramp. The header sits at scroll 0, so a
+      // scrubbed fade-in would leave the numeral invisible exactly where it
+      // is meant to be read.
+      gsap.fromTo(
+        '.page-numeral',
+        { yPercent: 8 },
+        {
+          yPercent: -14,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: rootRef.current,
+            start: 'top top',
+            end: 'bottom top',
+            scrub: 1.4,
+          },
+        }
+      );
     },
     [motionOK, numeral],
     rootRef
@@ -103,25 +150,37 @@ export function PageHeader({
       )}
 
       <div className="shell">
-        <p className="page-eyebrow eyebrow reveal">{eyebrow}</p>
+        {/* The label and its drawing share a row, so the ornament can never
+            land on the title however narrow the page gets. */}
+        <div className="flex flex-wrap items-end gap-x-5 gap-y-2">
+          <p data-text="write" className="eyebrow">
+            {eyebrow}
+          </p>
+          <Art
+            data-ill
+            data-ill-delay="0.35"
+            className={`pointer-events-none shrink-0 ${ornament.className}`}
+          />
+        </div>
 
         <SplitHeading
           as="h1"
           id={id}
           mode={mode}
           start="top 98%"
-          className="mt-8 max-w-[13em] text-h1"
+          className="mt-6 max-w-[13em] text-h1"
         >
-          {title}
+          {accentLastWord(title)}
         </SplitHeading>
 
         {lede && (
-          <p className="page-lede reveal mt-10 max-w-[54ch] font-sans text-lede text-ink-soft/80">
+          <p
+            data-text={ornament.lede}
+            className="mt-9 max-w-[52ch] font-sans text-lede text-ink-soft/80"
+          >
             {lede}
           </p>
         )}
-
-        <div className="page-rule rule-gold mt-10 origin-left" />
       </div>
     </header>
   );

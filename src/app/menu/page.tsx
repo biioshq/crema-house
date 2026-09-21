@@ -14,11 +14,11 @@ export default function MenuPage() {
   return (
     <>
       <PageHeader
-        eyebrow="03 — The Menu"
+        eyebrow="The menu"
         title="Ten things, done properly."
         numeral="03"
         mode="chars-scatter"
-        lede="Everything here is made in the room, to order. The coffee is single origin and changes with the season — ask what is on the bar today."
+        lede="Everything here is made in the room, to order. The coffee is single origin and changes with the season, so ask what is on the bar today."
       />
 
       <Menu items={MENU} showHeader={false} />

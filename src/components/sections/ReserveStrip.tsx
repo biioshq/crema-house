@@ -1,49 +1,40 @@
-'use client';
-
 import Link from 'next/link';
-import { useRef } from 'react';
 import { ArrowUpRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Magnetic } from '@/components/motion/Magnetic';
-import { gsap, useGsap } from '@/hooks/useGsap';
-import { useMotionOK } from '@/hooks/useMediaQuery';
+import { Swirl } from '@/components/illustrations/Doodles';
 
 type ReserveStripProps = {
   heading: string;
   body?: string;
 };
 
+/** Sets the last word of the heading in the clay italic accent. */
+function accentLastWord(text: string) {
+  const at = text.trimEnd().lastIndexOf(' ');
+  if (at < 0) return <em className="accent">{text}</em>;
+  return (
+    <>
+      {text.slice(0, at + 1)}
+      <em className="accent">{text.slice(at + 1)}</em>
+    </>
+  );
+}
+
 /**
  * The closing band on every sub-page.
  *
- * Deliberately quieter than the reservation page itself — a gold rule, a line
- * of type and one action. It exists so that no page ends on a dead stop, not
- * to compete with /reserve.
+ * Deliberately quieter than the reservation page itself: a flourish, a line of
+ * type and one action. It exists so that no page ends on a dead stop, not to
+ * compete with /reserve.
+ *
+ * The clay rule that used to open the band is now an inked loop, which is the
+ * only mark the eye needed there, and the type reveals through `data-text`, so
+ * nothing in here is animated by hand.
  */
 export function ReserveStrip({ heading, body }: ReserveStripProps) {
-  const rootRef = useRef<HTMLElement>(null);
-  const motionOK = useMotionOK();
-
-  useGsap(
-    () => {
-      if (!motionOK) return;
-
-      gsap
-        .timeline({ scrollTrigger: { trigger: rootRef.current, start: 'top 84%', once: true } })
-        .fromTo('.strip-rule', { scaleX: 0 }, { scaleX: 1, duration: 1.5, ease: 'power3.inOut' }, 0)
-        .fromTo(
-          '.strip-item',
-          { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, duration: 1.1, stagger: 0.1 },
-          0.3
-        );
-    },
-    [motionOK],
-    rootRef
-  );
-
   return (
-    <section ref={rootRef} className="relative isolate overflow-hidden pb-section">
+    <section className="relative isolate overflow-hidden pb-section">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[85%]"
@@ -54,15 +45,29 @@ export function ReserveStrip({ heading, body }: ReserveStripProps) {
       />
 
       <div className="shell">
-        <div className="strip-rule rule-gold origin-left" />
+        <div className="flex flex-col items-center gap-8 text-center lg:flex-row lg:justify-between lg:gap-12 lg:text-left">
+          <div>
+            <Swirl
+              data-ill
+              className="pointer-events-none mx-auto mb-5 h-auto w-20 text-clay lg:mx-0 lg:w-24"
+            />
 
-        <div className="mt-10 flex flex-col items-center gap-10 text-center lg:flex-row lg:justify-between lg:gap-12 lg:text-left">
-          <div className="strip-item reveal">
-            <h2 className="max-w-[16em] text-h3">{heading}</h2>
-            {body && <p className="mt-5 max-w-[46ch] font-sans text-body text-mute">{body}</p>}
+            <h2 data-text="wipe" className="max-w-[16em] text-h3">
+              {accentLastWord(heading)}
+            </h2>
+
+            {body && (
+              <p
+                data-text="words"
+                data-text-delay="0.25"
+                className="mt-5 max-w-[46ch] font-sans text-body text-mute"
+              >
+                {body}
+              </p>
+            )}
           </div>
 
-          <div className="strip-item shrink-0 reveal">
+          <div data-text="fade" data-text-delay="0.4" className="shrink-0">
             <Magnetic strength={0.3} padding={40}>
               <Button asChild size="xl" variant="gilt">
                 <Link href="/reserve">

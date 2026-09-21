@@ -2,6 +2,9 @@
 
 import Link from 'next/link';
 import { useRef } from 'react';
+import { Sparkle } from '@/components/illustrations/Doodles';
+import { Blossom } from '@/components/illustrations/Florals';
+import { Sprig } from '@/components/illustrations/Foliage';
 import { BackgroundVideo } from '@/components/media/BackgroundVideo';
 import { Magnetic } from '@/components/motion/Magnetic';
 import { Button } from '@/components/ui/button';
@@ -158,6 +161,16 @@ export function Hero() {
       // a portrait tablet, and a fixed stop that clears the first cuts through
       // the second — taking "of Coffee" with it.
       root.style.setProperty('--hero-frame-bottom', `${(((y + h) / height) * 100).toFixed(2)}%`);
+
+      // Where the sculpted words stop, and how much wall is left to the right
+      // of them. The blossom stands in that margin: measured, never guessed,
+      // because the margin is 140px on a wide desktop and nothing at all on a
+      // narrow one, and a drawing that covers "of Coffee" is the one thing
+      // this section may not do.
+      const textRight = x + TEXT.right * w;
+      root.style.setProperty('--hero-text-right', `${textRight.toFixed(2)}px`);
+      root.style.setProperty('--hero-right-gap', `${Math.max(0, width - textRight).toFixed(2)}px`);
+
       root.classList.toggle('hero-stacked', stacked);
     };
 
@@ -170,41 +183,23 @@ export function Hero() {
   }, []);
 
   // --- Entrance -----------------------------------------------------------
+  // The picture only. Every line of copy carries `data-text` and every drawing
+  // `data-ill`, and the site-wide reveal runner plays those; their
+  // `data-*-delay`s are timed to land while this push-in is settling.
   useIsoLayoutEffect(() => {
     const ctx = gsap.context(() => {
       if (!motionOK) {
-        gsap.set(
-          ['.hero-stage', '.hero-eyebrow-text', '.hero-lede', '.hero-cta-item', '.hero-foot'],
-          { opacity: 1 }
-        );
+        gsap.set('.hero-stage', { opacity: 1 });
         return;
       }
 
-      const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
-
       // The push-in resolves *to* 1, never past it, so the frame is whole from
       // the moment it settles and stays whole.
-      tl.fromTo(
+      gsap.fromTo(
         '.hero-stage',
         { opacity: 0, scale: 1.06 },
-        { opacity: 1, scale: 1, duration: 2.2, ease: 'power2.out' },
-        0
-      )
-        .fromTo('.hero-rule', { scaleX: 0 }, { scaleX: 1, duration: 1.5, ease: 'power3.inOut' }, 0.6)
-        .fromTo('.hero-eyebrow-text', { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 1 }, 0.75)
-        .fromTo(
-          '.hero-lede',
-          { opacity: 0, y: 26, rotateX: -12 },
-          { opacity: 1, y: 0, rotateX: 0, duration: 1.3 },
-          0.95
-        )
-        .fromTo(
-          '.hero-cta-item',
-          { opacity: 0, y: 28, rotateX: -14 },
-          { opacity: 1, y: 0, rotateX: 0, duration: 1.2, stagger: 0.11 },
-          1.1
-        )
-        .fromTo('.hero-foot', { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 1 }, 1.4);
+        { opacity: 1, scale: 1, duration: 2.2, ease: 'power2.out' }
+      );
     }, rootRef);
 
     return () => ctx.revert();
@@ -296,6 +291,29 @@ export function Hero() {
           precisely what used to wash out "of Coffee" on a tablet. */}
       <div aria-hidden className="hero-paper pointer-events-none absolute inset-0 z-1" />
 
+      {/* A spray of blossom standing in the wall to the right of the words.
+
+          The near corner of the shot is out of focus and holds nothing but a
+          bean and a shadow, which is the one place on this picture where
+          something drawn can sit without competing with the sculpted
+          lettering or the copy.
+
+          Everything about where it lands is measured rather than guessed, in
+          `.hero-bloom` in globals.css: it starts where the lettering ends
+          (`--hero-text-right`), it is never wider than the wall that is left
+          (`--hero-right-gap`, so it shrinks to nothing rather than creep over
+          a letter), and it stands on the foot of the *picture*
+          (`--hero-frame-bottom`) rather than the foot of the section, which is
+          a different line once the layout stacks. */}
+      <div aria-hidden className="hero-bloom pointer-events-none absolute z-5">
+        <Blossom
+          data-ill
+          data-ill-delay="1.05"
+          data-ill-float="14"
+          className="h-auto w-full origin-bottom rotate-6"
+        />
+      </div>
+
       {/* ---------- The copy ---------- */}
       <div
         className="hero-front absolute inset-x-0 z-10 will-change-transform"
@@ -320,31 +338,71 @@ export function Hero() {
                   'radial-gradient(54% 56% at 50% 50%, rgb(248 245 239 / 0.92) 0%, rgb(248 245 239 / 0.6) 55%, rgb(248 245 239 / 0) 80%)',
               }}
             />
-            <div className="flex w-full items-center justify-center gap-4 sm:gap-6">
-              <span className="hero-rule h-px w-[clamp(1.5rem,9vw,8rem)] origin-right bg-linear-to-l from-gold/60 to-transparent" />
-              <span className="hero-eyebrow-text eyebrow reveal whitespace-nowrap">
-                Mumbai · Single Origin
-              </span>
-              <span className="hero-rule h-px w-[clamp(1.5rem,9vw,8rem)] origin-left bg-linear-to-r from-gold/60 to-transparent" />
+            {/* A few sparkles scattered in the copy's own corners, where the
+                eyebrow and the button row leave the box empty. They stay inside
+                it on purpose: outside, they would drift onto the lettering. */}
+            <Sparkle
+              data-ill
+              data-ill-delay="1.5"
+              className="pointer-events-none absolute top-0 left-[4%] size-3.5 sm:left-[8%] sm:size-4"
+            />
+            <Sparkle
+              data-ill
+              data-ill-delay="1.7"
+              className="pointer-events-none absolute top-[38%] right-0 hidden size-3 sm:block"
+            />
+            <Sparkle
+              data-ill
+              data-ill-delay="1.9"
+              className="pointer-events-none absolute right-[6%] bottom-1 size-3 sm:right-[14%]"
+            />
+
+            {/* Two sprigs, mirrored, hold the eyebrow between them. */}
+            <div className="flex w-full items-center justify-center gap-2.5 sm:gap-4">
+              <Sprig
+                flip
+                data-ill
+                data-ill-delay="0.5"
+                className="h-auto w-12 shrink-0 sm:w-16"
+              />
+              <p data-text="write" data-text-delay="0.6" className="eyebrow whitespace-nowrap">
+                Mumbai · single origin
+              </p>
+              <Sprig
+                data-ill
+                data-ill-delay="0.5"
+                className="h-auto w-12 shrink-0 sm:w-16"
+              />
             </div>
 
-            <p className="hero-lede reveal mt-6 max-w-[56ch] text-balance font-sans text-body text-ink-soft">
+            <p
+              data-text="words"
+              data-text-delay="0.85"
+              className="mt-5 max-w-[56ch] text-balance font-sans text-body text-ink-soft"
+            >
               Fourteen grams. Ninety-four degrees. Twenty-six seconds. A decade spent
               removing everything that isn&rsquo;t the cup.
             </p>
 
             {/* Stacked and equal-width on a phone — two pills of different
-                widths read as an accident at that size. */}
-            <div className="mt-7 flex w-full max-w-76 flex-col gap-3 sm:mt-8 sm:max-w-none sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-4">
-              <span className="hero-cta-item reveal block w-full sm:w-auto">
-                <Magnetic className="block w-full sm:w-auto" strength={0.3} padding={36}>
+                widths read as an accident at that size.
+
+                The gap and the magnetism are a pair. Each pill leans towards
+                the pointer, so a pointer parked between them pulls *both*
+                inwards at once and the two pills meet in the middle: the lean
+                has to stay smaller than half the gap. 0.18 of a 22px catch
+                radius is about 4px of travel against a 32px gap, which reads
+                as a nudge and can never close. */}
+            <div className="mt-7 flex w-full max-w-76 flex-col gap-3 sm:mt-8 sm:max-w-none sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-8">
+              <span data-text="pop" data-text-delay="1.15" className="block w-full sm:w-auto">
+                <Magnetic className="block w-full sm:w-auto" strength={0.18} padding={22}>
                   <Button asChild size="lg" variant="primary" className="w-full sm:w-auto">
                     <Link href="/menu">Explore the menu</Link>
                   </Button>
                 </Magnetic>
               </span>
-              <span className="hero-cta-item reveal block w-full sm:w-auto">
-                <Magnetic className="block w-full sm:w-auto" strength={0.3} padding={36}>
+              <span data-text="pop" data-text-delay="1.27" className="block w-full sm:w-auto">
+                <Magnetic className="block w-full sm:w-auto" strength={0.18} padding={22}>
                   <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
                     <Link href="/reserve">Reserve a table</Link>
                   </Button>
@@ -352,10 +410,10 @@ export function Hero() {
               </span>
             </div>
 
-            <div className="hero-foot reveal mt-7 flex items-center gap-3">
+            <div data-text="fade" data-text-delay="1.5" className="mt-7 flex items-center gap-3">
               <span className="relative flex size-1.5">
-                <span className="absolute inline-flex size-full rounded-full bg-gold opacity-70 motion-safe:animate-pulse-soft" />
-                <span className="relative inline-flex size-1.5 rounded-full bg-gold" />
+                <span className="absolute inline-flex size-full rounded-full bg-clay opacity-70 motion-safe:animate-pulse-soft" />
+                <span className="relative inline-flex size-1.5 rounded-full bg-clay" />
               </span>
               <span className="font-sans text-micro font-medium text-ink uppercase">
                 Open now · until 22:00

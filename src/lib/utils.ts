@@ -21,10 +21,10 @@ const COLORS = [
   'ink-soft',
   'mute',
   'faint',
-  'gold',
-  'gold-lit',
-  'gold-deep',
-  'gold-wash',
+  'clay',
+  'clay-lit',
+  'clay-deep',
+  'clay-wash',
 ];
 
 const twMerge = extendTailwindMerge({

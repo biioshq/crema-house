@@ -42,6 +42,13 @@ export function Counter({
     if (!mask || !number) return;
 
     if (!motionOK) {
+      // `useMotionOK` cannot know the answer until the client has mounted, so
+      // the first pass through this effect always takes the animated branch
+      // and hides the digits. When the real preference arrives and this branch
+      // takes over, that hidden state is still sitting on the element as an
+      // inline style — clearing it is what keeps a reduced-motion visitor from
+      // being shown three invisible statistics.
+      gsap.set(number, { clearProps: 'all' });
       number.textContent = format(value);
       return;
     }

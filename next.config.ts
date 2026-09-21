@@ -3,6 +3,11 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   reactStrictMode: true,
 
+  // A second dev server or a production build can be pointed at its own build
+  // directory (NEXT_DIST_DIR=.next-check next build), so checking the site
+  // never clobbers the `.next` folder the running dev server is serving from.
+  distDir: process.env.NEXT_DIST_DIR || '.next',
+
   images: {
     // AVIF first — roughly 25% smaller than WebP on these dark, grainy photographs.
     formats: ['image/avif', 'image/webp'],

@@ -5,7 +5,9 @@ import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Button } from '@/components/ui/button';
+import { Squiggle } from '@/components/illustrations/Doodles';
 import { Magnetic } from '@/components/motion/Magnetic';
+import { Wordmark } from '@/components/layout/Wordmark';
 import { useGsap, gsap, ScrollTrigger } from '@/hooks/useGsap';
 import { useIsoLayoutEffect } from '@/hooks/useIsoLayoutEffect';
 import { useMotionOK } from '@/hooks/useMediaQuery';
@@ -18,7 +20,7 @@ import { cn } from '@/lib/utils';
  *
  * A pill that floats clear of the page. At the top it is nothing but type on
  * the footage; past the first screen it draws in its own frosted surface, a
- * gold hairline and a shadow, and tightens by a few millimetres.
+ * clay hairline and a shadow, and tightens by a few millimetres.
  *
  * Everything that changes on scroll is a *non-transform* property, which is
  * deliberate: a transformed ancestor becomes a backdrop root, and a
@@ -26,9 +28,9 @@ import { cn } from '@/lib/utils';
  * The entrance is the one exception, and it clears its own transform.
  *
  * Two things are pointedly quick. The links are set in the text face at label
- * size, semibold and full ink rather than a 70% wash of it, because a small
- * letterspaced label at 70% opacity on cream is a navigation you have to hunt
- * for. And the pill's own state change no longer transitions `padding` (which
+ * size, semibold and full ink rather than a 70% wash of it, with only a light
+ * track (a wide-spaced label is the luxury-template tell, and at 70% opacity
+ * on cream it is a navigation you have to hunt for). And the pill's own state change no longer transitions `padding` (which
  * relayouts) or `backdrop-filter` (which re-blurs the entire viewport, every
  * frame, for the length of the transition).
  */
@@ -116,7 +118,7 @@ export function Nav() {
               'transition-[background-color,border-color,box-shadow] duration-500 ease-luxe',
               'border px-5 sm:px-7',
               scrolled
-                ? 'h-[3.5rem] border-gold/25 bg-card/75 shadow-float backdrop-blur-lg lg:h-16'
+                ? 'h-[3.5rem] border-clay/25 bg-card/75 shadow-float backdrop-blur-lg lg:h-16'
                 : 'h-16 border-transparent bg-transparent shadow-none lg:h-[4.5rem]'
             )}
           >
@@ -132,21 +134,10 @@ export function Nav() {
             />
 
             {/* Wordmark. Padding plus a matching negative margin gives a 44px
-                hit area without moving anything. */}
-            {/* The halo is in the page colour: invisible against paper, and
-                the only thing holding the wordmark together where the
-                transparent pill sits directly on the hero footage. */}
-            <Link
-              href="/"
-              className="group relative flex items-baseline gap-2.5 py-3.5 -my-3.5"
-              style={{ textShadow: '0 1px 14px rgb(248 245 239 / 0.9)' }}
-            >
-              <span className="font-sans text-label font-semibold tracking-[0.26em] text-ink">
-                {SITE.nameShort}
-              </span>
-              <span className="font-sans text-micro font-medium text-ink-soft transition-colors duration-200 group-hover:text-gold-deep">
-                HOUSE
-              </span>
+                hit area without moving anything. Nothing is laid behind it:
+                the lockup stands on whatever the pill is standing on. */}
+            <Link href="/" aria-label={`${SITE.name} — home`} className="group py-3.5 -my-3.5">
+              <Wordmark />
             </Link>
 
             {/* Desktop links */}
@@ -157,19 +148,26 @@ export function Nav() {
                     href={link.href}
                     aria-current={isCurrent(link.href) ? 'page' : undefined}
                     className={cn(
-                      'group relative block py-2 font-sans text-label font-semibold tracking-[0.2em] uppercase transition-colors duration-200 hover:text-ink',
+                      'group relative block py-2 font-sans text-label font-semibold tracking-[0.1em] uppercase transition-colors duration-200 hover:text-ink',
                       isCurrent(link.href) ? 'text-ink' : 'text-ink-soft'
                     )}
                   >
                     {link.label}
+                    {/* The current/hover marker is a hand-drawn wiggle rather
+                        than a hairline: the one straight rule left in the
+                        chrome was also the most template-looking thing in it.
+                        No `data-ill` — this is a hover state, not a reveal. */}
                     <span
+                      aria-hidden
                       className={cn(
-                        'absolute inset-x-0 -bottom-0.5 h-px bg-gold transition-transform duration-400 ease-luxe',
+                        'absolute inset-x-0 -bottom-1 block transition-transform duration-400 ease-luxe',
                         isCurrent(link.href)
                           ? 'scale-x-100'
                           : 'origin-right scale-x-0 group-hover:origin-left group-hover:scale-x-100'
                       )}
-                    />
+                    >
+                      <Squiggle className="block h-1.75 w-full text-clay" />
+                    </span>
                   </Link>
                 </li>
               ))}
@@ -254,9 +252,8 @@ export function Nav() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ delay: 0.32, duration: 0.45 }}
-                className="mt-10"
+                className="mt-14"
               >
-                <div aria-hidden className="rule-gold mb-10" />
                 <Button asChild size="lg" variant="gilt">
                   <Link href="/reserve" onClick={() => setOpen(false)}>
                     Reserve a table

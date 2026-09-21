@@ -1,21 +1,18 @@
-'use client';
-
-import { createElement, useRef, type ElementType, type ReactNode } from 'react';
-import { gsap, ScrollTrigger } from '@/lib/gsap';
-import { useIsoLayoutEffect } from '@/hooks/useIsoLayoutEffect';
-import { useMotionOK } from '@/hooks/useMediaQuery';
-import { splitText, type SplitResult } from '@/lib/split';
+import { createElement, type ElementType, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
 /**
- * Scroll-triggered text reveal.
+ * Compatibility wrapper around the declarative reveal API.
  *
- * Each section picks a different `mode`, which is how the site keeps its
- * promise that no two reveals repeat. The heavy lifting is shared: wait for
- * fonts (line breaks depend on them), split, play once, then **revert the
- * split entirely** — so once the reveal is done the DOM is plain text again,
- * with no orphaned spans, no lingering `will-change`, and nothing to break
- * when the viewport is resized.
+ * All of the machinery that used to live here — the splitter, the per-mode
+ * timelines, the font wait, the resize re-split — is now
+ * `components/motion/RevealRunner.tsx`, which drives every revealed element on
+ * the site from one place. This component is what is left: it renders the
+ * `data-text` attributes for the pages that still call it by name, with the
+ * same props they always passed.
+ *
+ * It is no longer a client component, and it no longer hides anything itself:
+ * the pre-hide is the CSS rule keyed on `[data-js]`.
  */
 export type SplitMode =
   /** Letters resolve out of blur. */
@@ -28,6 +25,15 @@ export type SplitMode =
   | 'chars-scatter'
   /** Each line unveils left to right behind a moving edge. */
   | 'mask-wipe';
+
+/** Old mode names in, runner mode names out. */
+const MODES: Record<SplitMode, string> = {
+  'chars-blur': 'chars',
+  'words-flip': 'flip',
+  'lines-rise': 'lines',
+  'chars-scatter': 'scatter',
+  'mask-wipe': 'wipe',
+};
 
 type SplitHeadingProps = {
   as?: ElementType;
@@ -49,193 +55,21 @@ export function SplitHeading({
   children,
   className,
   start = 'top 82%',
-  delay = 0,
+  delay,
   stagger,
 }: SplitHeadingProps) {
-  const ref = useRef<HTMLElement>(null);
-  const motionOK = useMotionOK();
-
-  useIsoLayoutEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-
-    if (!motionOK) {
-      gsap.set(el, { opacity: 1 });
-      return;
-    }
-
-    // Hide before first paint; JS-off users are unaffected because this only
-    // ever runs on the client.
-    gsap.set(el, { opacity: 0 });
-
-    let split: SplitResult | null = null;
-    let trigger: ScrollTrigger | null = null;
-    let cancelled = false;
-
-    const build = () => {
-      if (cancelled || !el) return;
-
-      split?.revert();
-      split = splitText(el, {
-        chars: mode.startsWith('chars'),
-        // Words hinging in 3D overflow their line box in both directions;
-        // an overflow-hidden line mask would shear them off.
-        lines: mode !== 'words-flip',
-      });
-
-      const { chars, words, lines, lineInners } = split;
-      const tl = gsap.timeline({ paused: true, delay });
-
-      switch (mode) {
-        case 'chars-blur': {
-          // The blur rides the line, not each glyph: a filter on an
-          // inline-block character forces its own offscreen surface every
-          // frame, and a headline is twenty of them.
-          gsap.set(lineInners, { yPercent: 110, filter: 'blur(12px)' });
-          gsap.set(chars, { opacity: 0.15 });
-          tl.to(lineInners, {
-            yPercent: 0,
-            filter: 'blur(0px)',
-            duration: 1.4,
-            stagger: stagger ?? 0.11,
-            ease: 'expo.out',
-          }).to(
-            chars,
-            { opacity: 1, duration: 1.2, stagger: 0.012, ease: 'power2.out' },
-            0.15
-          );
-          break;
-        }
-
-        case 'words-flip': {
-          // The hinge sits on the baseline and slightly behind the glyph, so
-          // words swing up into place rather than spinning in the air. The
-          // perspective lives on the element itself because this mode runs
-          // without line wrappers.
-          gsap.set(el, { perspective: 900 });
-          gsap.set(words, {
-            transformOrigin: '50% 100% -0.35em',
-            rotateX: -92,
-            opacity: 0,
-            y: '0.14em',
-          });
-          tl.to(words, {
-            rotateX: 0,
-            opacity: 1,
-            y: 0,
-            duration: 1.25,
-            stagger: stagger ?? 0.055,
-            ease: 'power4.out',
-          });
-          break;
-        }
-
-        case 'lines-rise': {
-          gsap.set(lineInners, { yPercent: 115, opacity: 0 });
-          tl.to(lineInners, {
-            yPercent: 0,
-            opacity: 1,
-            duration: 1.35,
-            stagger: stagger ?? 0.1,
-            ease: 'expo.out',
-          });
-          break;
-        }
-
-        case 'chars-scatter': {
-          gsap.set(chars, {
-            opacity: 0,
-            // Deterministic scatter — index-derived, never Math.random, so a
-            // remount looks identical.
-            x: (i: number) => (i % 2 ? 1 : -1) * (12 + (i % 7) * 6),
-            y: (i: number) => (i % 3 ? -1 : 1) * (18 + (i % 5) * 9),
-            rotate: (i: number) => (i % 2 ? 1 : -1) * (6 + (i % 4) * 3),
-          });
-          tl.to(chars, {
-            opacity: 1,
-            x: 0,
-            y: 0,
-            rotate: 0,
-            duration: 1.15,
-            stagger: stagger ?? 0.018,
-            ease: 'power3.out',
-          });
-          break;
-        }
-
-        case 'mask-wipe': {
-          gsap.set(lines, { clipPath: 'inset(0% 100% 0% 0%)' });
-          tl.to(lines, {
-            clipPath: 'inset(0% 0% 0% 0%)',
-            duration: 1.15,
-            stagger: stagger ?? 0.13,
-            ease: 'power3.inOut',
-          });
-          break;
-        }
-      }
-
-      gsap.set(el, { opacity: 1 });
-
-      trigger?.kill();
-      trigger = ScrollTrigger.create({
-        trigger: el,
-        start,
-        once: true,
-        onEnter: () => {
-          tl.play();
-          // Hand the DOM back clean once the motion is finished.
-          tl.eventCallback('onComplete', () => {
-            split?.revert();
-            split = null;
-          });
-        },
-      });
-    };
-
-    // Line breaks are measured, so they are only correct after the webfont
-    // has actually swapped in.
-    //
-    // `fonts.ready` waits for *every* font on the page, and until it settles
-    // the heading is sitting at opacity 0 — one slow face anywhere and the
-    // whole page reads as blank paper. next/font preloads these, so they land
-    // in a fraction of a second; the timeout is purely the guarantee that a
-    // slow or failed font can never leave a headline invisible.
-    let built = false;
-    const buildOnce = () => {
-      if (built) return;
-      built = true;
-      build();
-    };
-
-    const fonts = document.fonts?.ready ?? Promise.resolve();
-    fonts.then(buildOnce).catch(buildOnce);
-    const fallback = window.setTimeout(buildOnce, 600);
-
-    // Re-split on width changes, but only while the reveal is still pending —
-    // once it has played the element is plain text and needs nothing.
-    let width = 0;
-    let frame = 0;
-    const observer = new ResizeObserver(([entry]) => {
-      const next = Math.round(entry?.contentRect.width ?? 0);
-      if (next === width) return;
-      width = next;
-      if (!split) return;
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(build);
-    });
-    observer.observe(el);
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(fallback);
-      cancelAnimationFrame(frame);
-      observer.disconnect();
-      trigger?.kill();
-      split?.revert();
-      gsap.set(el, { clearProps: 'opacity' });
-    };
-  }, [mode, start, delay, stagger, motionOK]);
-
-  return createElement(as, { ref, id, className: cn(className) }, children);
+  return createElement(
+    as,
+    {
+      id,
+      className: cn(className),
+      'data-text': MODES[mode] ?? 'lines',
+      'data-text-start': start,
+      // Omitted rather than zeroed, so a heading with no explicit delay can
+      // still take its place in the runner's sibling cascade.
+      'data-text-delay': delay === undefined ? undefined : String(delay),
+      'data-text-stagger': stagger === undefined ? undefined : String(stagger),
+    },
+    children
+  );
 }

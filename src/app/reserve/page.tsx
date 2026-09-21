@@ -12,7 +12,7 @@ export default function ReservePage() {
   return (
     <>
       <PageHeader
-        eyebrow="06 — Reservations"
+        eyebrow="Reservations"
         title="Keep a table."
         numeral="06"
         mode="words-flip"

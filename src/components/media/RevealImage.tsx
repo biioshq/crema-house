@@ -165,9 +165,9 @@ export function RevealImage({
           style={{
             background:
               direction === 'left' || direction === 'right'
-                ? 'linear-gradient(180deg, transparent, rgb(221 184 119 / 0.95), transparent)'
-                : 'linear-gradient(90deg, transparent, rgb(221 184 119 / 0.95), transparent)',
-            boxShadow: '0 0 22px 2px rgb(221 184 119 / 0.55)',
+                ? 'linear-gradient(180deg, transparent, rgb(224 147 122 / 0.95), transparent)'
+                : 'linear-gradient(90deg, transparent, rgb(224 147 122 / 0.95), transparent)',
+            boxShadow: '0 0 22px 2px rgb(224 147 122 / 0.55)',
           }}
         />
       )}
