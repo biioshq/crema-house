@@ -1,9 +1,9 @@
 {
-  "/_not-found/page": "/_not-found",
   "/icon.svg/route": "/icon.svg",
+  "/_not-found/page": "/_not-found",
   "/page": "/",
-  "/story/page": "/story",
   "/reserve/page": "/reserve",
-  "/voices/page": "/voices",
-  "/menu/page": "/menu"
+  "/story/page": "/story",
+  "/menu/page": "/menu",
+  "/voices/page": "/voices"
 }

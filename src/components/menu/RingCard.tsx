@@ -71,15 +71,23 @@ export function RingCard({ item }: RingCardProps) {
       {/* Name and price on one row, the price at the right — the same
           arrangement as the menu grid, so a plate met here is recognisable
           when it turns up again on /menu. */}
-      <span className="mt-3 flex items-baseline justify-between gap-2.5 px-1 pb-0.5">
-        {/* Wraps to a second line rather than truncating. A plate on the
-            stand is 150px wide on a phone, which is not enough for "Grilled
-            Chicken Sandwich" on one line: truncation turned half the list
-            into "Chocola…", which is worse than a name set two lines deep. */}
-        <span className="display-face text-[0.9rem] leading-[1.15] text-balance text-ink sm:text-[1.05rem]">
+      <span className="mt-3 flex items-start justify-between gap-2.5 px-1 pb-0.5">
+        {/* Wraps to a second line rather than truncating. A plate on the stand
+            is 144px wide on a phone, which is not enough for "Grilled Chicken
+            Sandwich" on one line: truncation turned half the list into
+            "Chocola…", which is worse than a name set two lines deep.
+
+            The two lines are *reserved* whether the name needs them or not —
+            see `.menu-ring-name`. Every plate on a ring has to be the same
+            height, and a foot that grew with the name made the stand look like
+            it was holding cards of three different sizes. */}
+        <span className="menu-ring-name display-face text-[0.9rem] leading-[1.15] text-ink sm:text-[1.05rem]">
           {item.name}
         </span>
-        <span className="menu-ring-price shrink-0 font-sans text-[0.72rem] font-medium tracking-[0.03em] text-mute tabular-nums">
+        {/* Nudged onto the first line's baseline: `items-start` is what keeps
+            the price level with the top of a name that runs to two lines, but
+            it also parks it a shade high against a one-line name. */}
+        <span className="menu-ring-price mt-[0.15rem] shrink-0 font-sans text-[0.72rem] font-medium tracking-[0.03em] text-mute tabular-nums">
           {formatPrice(item.price)}
         </span>
       </span>

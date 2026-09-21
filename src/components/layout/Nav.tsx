@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Button } from '@/components/ui/button';
 import { Squiggle } from '@/components/illustrations/Doodles';
@@ -37,6 +37,9 @@ import { cn } from '@/lib/utils';
 export function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   const pathname = usePathname();
   const motionOK = useMotionOK();
@@ -99,6 +102,58 @@ export function Nav() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
+
+  /**
+   * Focus goes into the panel when it opens, stays there while it is open, and
+   * comes back to the trigger when it closes.
+   *
+   * Without this the page behind an opaque, full-screen overlay is still in the
+   * tab order: the focus ring walks off into content nobody can see and does
+   * not come back. The trigger is deliberately the first stop in the cycle —
+   * it lives in the header, outside the panel, and it is also the close
+   * button, so a trap built only from the panel's own links would make the
+   * menu impossible to leave by keyboard.
+   */
+  useEffect(() => {
+    if (!open) return;
+
+    const panel = panelRef.current;
+    if (!panel) return;
+
+    const focusables = () => {
+      const inPanel = Array.from(
+        panel.querySelectorAll<HTMLElement>('a[href], button:not([disabled])')
+      );
+      const trigger = triggerRef.current;
+      return trigger ? [trigger, ...inPanel] : inPanel;
+    };
+
+    focusables()[1]?.focus();
+
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Tab') return;
+      const items = focusables();
+      if (items.length < 2) return;
+
+      const first = items[0];
+      const last = items[items.length - 1];
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', onKey);
+
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      triggerRef.current?.focus();
+    };
+  }, [open]);
 
   const isCurrent = useCallback(
     (href: string) =>
@@ -181,25 +236,33 @@ export function Nav() {
               </Magnetic>
 
               {/* Mobile trigger */}
+              {/* The bars were a hairline: 1px tall and 16px wide, which on a
+                  phone screen in daylight, over moving footage, is close to
+                  invisible. 2px at 20px with round caps is still a quiet mark
+                  and is actually a control you can see. No `sr-only` label
+                  either — `aria-label` already names the button, and the two
+                  together had screen readers saying "Open menu, Menu". */}
               <button
+                ref={triggerRef}
                 type="button"
                 onClick={() => setOpen((value) => !value)}
                 aria-expanded={open}
                 aria-controls="mobile-menu"
                 aria-label={open ? 'Close menu' : 'Open menu'}
-                className="relative grid size-11 touch-manipulation place-items-center rounded-full border border-hair bg-card/60 transition-transform duration-[120ms] ease-luxe active:scale-90 lg:hidden"
+                className="relative grid size-11 touch-manipulation place-items-center rounded-full border border-clay/20 bg-card/85 transition-transform duration-[120ms] ease-luxe active:scale-90 lg:hidden"
               >
-                <span className="sr-only">Menu</span>
                 <span
+                  aria-hidden
                   className={cn(
-                    'absolute h-px w-4 bg-ink transition-transform duration-300 ease-luxe',
-                    open ? 'translate-y-0 rotate-45' : '-translate-y-[3px]'
+                    'absolute h-0.5 w-5 rounded-full bg-ink transition-transform duration-300 ease-luxe',
+                    open ? 'translate-y-0 rotate-45' : '-translate-y-[4px]'
                   )}
                 />
                 <span
+                  aria-hidden
                   className={cn(
-                    'absolute h-px w-4 bg-ink transition-transform duration-300 ease-luxe',
-                    open ? 'translate-y-0 -rotate-45' : 'translate-y-[3px]'
+                    'absolute h-0.5 w-5 rounded-full bg-ink transition-transform duration-300 ease-luxe',
+                    open ? 'translate-y-0 -rotate-45' : 'translate-y-[4px]'
                   )}
                 />
               </button>
@@ -208,59 +271,86 @@ export function Nav() {
         </div>
       </header>
 
-      {/* Full-bleed mobile menu */}
+      {/* Full-bleed mobile menu.
+
+          The panel scrolls. It used to be a `justify-end` column with
+          `pb-[18vh]` and no overflow, which is fine on a tall phone and
+          unusable on a short one: turn a 740x360 handset sideways and four
+          links at `text-h2` plus the Reserve button come to roughly 420px of
+          content in a 360px window, with the last of it simply gone. Now the
+          content bottom-aligns when there is room and scrolls when there is
+          not — `min-h-full` on the inner column is what gives it both. */}
       <AnimatePresence>
         {open && (
           <motion.div
             id="mobile-menu"
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menu"
             initial={{ clipPath: 'inset(0% 0% 100% 0%)' }}
             animate={{ clipPath: 'inset(0% 0% 0% 0%)' }}
             exit={{ clipPath: 'inset(0% 0% 100% 0%)' }}
             transition={{ duration: 0.55, ease: EASE.curtain }}
-            className="fixed inset-0 z-40 flex flex-col justify-end bg-canvas lg:hidden"
+            className="fixed inset-0 z-40 overflow-y-auto overscroll-contain bg-canvas lg:hidden"
           >
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0"
-              style={{
-                background:
-                  'radial-gradient(88% 52% at 50% 104%, rgb(241 231 213 / 0.9), transparent 70%)',
-              }}
-            />
+            {/* The wash sits on the inner column rather than the scroll box, so
+                it covers the whole of a scrolled panel instead of staying
+                pinned to the first screenful. */}
+            <div className="relative flex min-h-full flex-col justify-end">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  background:
+                    'radial-gradient(88% 52% at 50% 104%, rgb(241 231 213 / 0.9), transparent 70%)',
+                }}
+              />
 
-            <ul className="shell relative flex flex-col gap-1 pb-[18vh]">
-              {NAV_LINKS.map((link, index) => (
-                <motion.li
-                  key={link.href}
-                  initial={{ y: 42, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  exit={{ y: 22, opacity: 0, transition: { duration: 0.3 } }}
-                  transition={{ duration: 0.6, ease: EASE.luxe, delay: 0.1 + index * 0.05 }}
-                >
-                  <Link
-                    href={link.href}
-                    onClick={() => setOpen(false)}
-                    className="display-face block py-2 text-h2 text-ink"
+              {/* Clear of the nav pill at the top, and off the home indicator
+                  at the bottom. */}
+              <ul className="shell relative flex flex-col gap-1 pt-24 pb-[max(2.5rem,12vh)]">
+                {NAV_LINKS.map((link, index) => (
+                  <motion.li
+                    key={link.href}
+                    initial={{ y: 42, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: 22, opacity: 0, transition: { duration: 0.3 } }}
+                    transition={{ duration: 0.6, ease: EASE.luxe, delay: 0.1 + index * 0.05 }}
                   >
-                    {link.label}
-                  </Link>
-                </motion.li>
-              ))}
+                    <Link
+                      href={link.href}
+                      onClick={() => setOpen(false)}
+                      aria-current={isCurrent(link.href) ? 'page' : undefined}
+                      className={cn(
+                        'display-face block py-2 text-h2',
+                        // The page you are on is marked here too. The desktop
+                        // bar has its wiggle underline; without this the mobile
+                        // menu was the one place on the site that would not
+                        // tell you where you were.
+                        isCurrent(link.href) ? 'text-clay' : 'text-ink'
+                      )}
+                    >
+                      {link.label}
+                    </Link>
+                  </motion.li>
+                ))}
 
-              <motion.li
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ delay: 0.32, duration: 0.45 }}
-                className="mt-14"
-              >
-                <Button asChild size="lg" variant="gilt">
-                  <Link href="/reserve" onClick={() => setOpen(false)}>
-                    Reserve a table
-                  </Link>
-                </Button>
-              </motion.li>
-            </ul>
+                <motion.li
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ delay: 0.32, duration: 0.45 }}
+                  className="mt-10 sm:mt-14"
+                >
+                  <Button asChild size="lg" variant="gilt">
+                    <Link href="/reserve" onClick={() => setOpen(false)}>
+                      Reserve a table
+                    </Link>
+                  </Button>
+                </motion.li>
+              </ul>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -685,7 +685,7 @@
      plate facing you sits a whole radius nearer the eye, so the perspective
      draws it at `2.8 / (2.8 - 1)` ≈ 1.56× its own box — a height sized to the
      card itself would let it spill over the caption beneath. */
-  height: calc(var(--menu-ring-card) * 1.56 + 7.5rem);
+  height: calc(var(--menu-ring-card) * 1.56 + 9.5rem);
   /* Tied to the radius rather than fixed, so the ring is foreshortened
      identically at every size: a constant depth would give a phone almost no
      perspective at all and a wide desktop far too much. 2.8 is shallow enough
@@ -758,6 +758,27 @@
    ring, coming *towards* the viewer is what "picking it up" looks like.
    -------------------------------------------------------------------------- */
 
+/* Two lines, reserved, whatever the dish happens to be called.
+
+   The names run from "Espresso" to "Grilled Chicken Sandwich". Letting the
+   foot grow with the name made the plates different heights — and on a ring,
+   where the eye measures each plate against the one beside it as they pass,
+   different heights read as different *sizes*. The height is set in `em`, so
+   one rule covers both type sizes: two lines at the 1.15 leading the element
+   carries is exactly 2.3em.
+
+   `line-clamp` is the guard rather than the mechanism. At 144px wide no name
+   in the current list reaches a third line; a longer one added later should be
+   cut rather than allowed to break the ring. */
+.menu-ring-name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  height: 2.3em;
+}
+
 .menu-ring-card {
   transition:
     transform 600ms var(--ease-luxe),
@@ -811,11 +832,11 @@
    length from one plate to the next. Two lines is the longest note there is. */
 .menu-ring-caption {
   flex: 1;
-  /* Reserved, not measured. Without a floor the controls walk up and down the
-     page every time the note changes length — and in the narrow column left
-     beside two buttons on a phone, a note runs to four lines where it takes
-     two on a desktop. */
-  min-height: 4.75rem;
+  /* Reserved, not measured. Without a floor, the foot walks up and down the
+     page every time the note changes length. On a phone the note now has the
+     whole width — the controls beside it are gone — so the longest of them
+     settles at two lines rather than the four it took in a narrow column. */
+  min-height: 3.5rem;
   text-align: center;
   text-wrap: balance;
 }
@@ -826,8 +847,14 @@
   }
 }
 
+/* Hidden on phones, where the ring is driven by putting a thumb on it and a
+   pair of 44px buttons under it is furniture competing with the note.
+
+   Hidden rather than unmounted: `display: none` also takes them out of the tab
+   order and the accessibility tree, which is exactly what is wanted, and it
+   avoids branching the markup on a media query the server cannot evaluate. */
 .menu-ring-nav {
-  display: grid;
+  display: none;
   place-items: center;
   flex: none;
   width: 2.75rem;
@@ -842,6 +869,12 @@
     background-color 500ms var(--ease-luxe),
     border-color 500ms var(--ease-luxe),
     color 500ms var(--ease-luxe);
+}
+
+@media (min-width: 640px) {
+  .menu-ring-nav {
+    display: grid;
+  }
 }
 
 @media (hover: hover) and (pointer: fine) {
