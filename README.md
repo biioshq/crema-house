@@ -1,5 +1,7 @@
 # CRÈMA HOUSE
 
+![The room — warm light, brick, a counter of pastries and a cappuccino on the near table](public/media/cafe.webp)
+
 A marketing site for a slow-roast coffee house, built as a bright editorial
 rather than the usual dark luxury template. Warm paper, hand-drawn
 illustration, one terracotta accent, and motion that is scroll-linked
@@ -50,6 +52,25 @@ Next.js 15 requires Node 18.18 or newer.
 component serves both the home-page preview and the full page. `Menu` also
 takes a `variant`: `grid` is the three-column vitrine, `ring` stands the same
 plates on a rotating cylinder. Nothing is duplicated between the two.
+
+<table>
+  <tr>
+    <td width="25%"><img src="public/media/cappuccino.webp" alt="Cappuccino with a rosetta poured into it" /></td>
+    <td width="25%"><img src="public/media/butter-croissant.webp" alt="A butter croissant" /></td>
+    <td width="25%"><img src="public/media/classic-tiramisu.webp" alt="A slice of tiramisu dusted with cocoa" /></td>
+    <td width="25%"><img src="public/media/iced-mocha-frappe.webp" alt="An iced mocha frappé" /></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Cappuccino</sub></td>
+    <td align="center"><sub>Butter Croissant</sub></td>
+    <td align="center"><sub>Classic Tiramisu</sub></td>
+    <td align="center"><sub>Iced Mocha Frappé</sub></td>
+  </tr>
+</table>
+
+<sup>Four of the ten. Each plate is a square crop on the ring and keeps its
+shot aspect in the grid — the variety reads as composition in a vitrine and as
+a wobble on a cylinder, so the two layouts crop differently.</sup>
 
 ---
 
