@@ -3,7 +3,7 @@
   "/_not-found/page": "/_not-found",
   "/page": "/",
   "/menu/page": "/menu",
+  "/reserve/page": "/reserve",
   "/voices/page": "/voices",
-  "/story/page": "/story",
-  "/reserve/page": "/reserve"
+  "/story/page": "/story"
 }

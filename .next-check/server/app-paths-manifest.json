@@ -3,7 +3,7 @@
   "/_not-found/page": "app/_not-found/page.js",
   "/page": "app/page.js",
   "/menu/page": "app/menu/page.js",
+  "/reserve/page": "app/reserve/page.js",
   "/voices/page": "app/voices/page.js",
-  "/story/page": "app/story/page.js",
-  "/reserve/page": "app/reserve/page.js"
+  "/story/page": "app/story/page.js"
 }

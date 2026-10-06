@@ -30,30 +30,6 @@
         "x-next-revalidate-tag-token"
       ]
     },
-    "/voices": {
-      "experimentalBypassFor": [
-        {
-          "type": "header",
-          "key": "next-action"
-        },
-        {
-          "type": "header",
-          "key": "content-type",
-          "value": "multipart/form-data;.*"
-        }
-      ],
-      "initialRevalidateSeconds": false,
-      "srcRoute": "/voices",
-      "dataRoute": "/voices.rsc",
-      "allowHeader": [
-        "host",
-        "x-matched-path",
-        "x-prerender-revalidate",
-        "x-prerender-revalidate-if-generated",
-        "x-next-revalidated-tags",
-        "x-next-revalidate-tag-token"
-      ]
-    },
     "/": {
       "experimentalBypassFor": [
         {
@@ -151,6 +127,30 @@
         "x-next-revalidate-tag-token"
       ]
     },
+    "/voices": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "next-action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/voices",
+      "dataRoute": "/voices.rsc",
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
     "/reserve": {
       "experimentalBypassFor": [
         {
@@ -179,8 +179,8 @@
   "dynamicRoutes": {},
   "notFoundRoutes": [],
   "preview": {
-    "previewModeId": "59644c99367c396e06995d98445db57f",
-    "previewModeSigningKey": "f3568171d3d390c88b453d31616448798e6e387ca1325982f969ad38a53ef798",
-    "previewModeEncryptionKey": "dcb874233a27576c78234b95ea229d612198d23cd503b2f5ef91d3ea943973c5"
+    "previewModeId": "259753d83540373419cb07447f468e27",
+    "previewModeSigningKey": "b1fe69c48543326ea46d367bef33c83f01c3143cb9aa2f7ab148d369c6d9df07",
+    "previewModeEncryptionKey": "7176295da421217beb7e0fea8d05e461a6a8ae508995cb8545207cffb02dea28"
   }
 }
